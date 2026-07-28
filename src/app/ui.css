@@ -1,0 +1,2180 @@
+/* ==========================================================================
+   LAYOUT LAYERS
+   --------------------------------------------------------------------------
+   z-order, low → high:
+     0    canvas (fixed, full bleed)
+     5    vignette   /  6  film grain   (BELOW the copy — see globals.css)
+     10   chapter copy  (pointer-events: none — 3D hover must reach the canvas)
+     70   nav + chapter rail
+     80   hidden corner trigger
+     200  admin console
+     300  loading scene
+     9999 custom cursor
+   ========================================================================== */
+
+.canvas-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.canvas-wrap canvas {
+  display: block;
+  touch-action: pan-y;
+}
+
+/* ==========================================================================
+   CHAPTERS
+   ========================================================================== */
+.chapters {
+  position: relative;
+  z-index: 10;
+}
+
+.chapter {
+  position: relative;
+}
+
+/* Width the fixed chapter rail occupies on the right. Copy must never run
+   underneath it — that was the collision in the Journey section. */
+:root {
+  /* svg (26px) + gap + widest label ≈ 190px, plus the rail's own 2rem inset.
+     Measured, not guessed — at 13rem the Journey column still clipped it. */
+  --rail-w: 14.5rem;
+}
+
+/* ------------------------------------------------------------------
+   FIXED pane, not sticky.
+   A `position: sticky` child only stays pinned for (block height −
+   pane height) of scrolling — with a 160vh block and a 100vh pane
+   that is just 37.5% of the section. The other 62.5% the copy was
+   scrolled away while the camera was still travelling, which is why
+   the card reels could only ever reach one of their cards.
+   Fixed panes are on screen for exactly the index range we choose,
+   so the copy and the camera stay in lockstep. See useSectionFade.
+   ------------------------------------------------------------------ */
+.chapter-inner {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  padding: clamp(5rem, 11vh, 7rem) var(--rail-w) clamp(3rem, 7vh, 5rem)
+    clamp(1.5rem, 6vw, 7rem);
+  /* Critical: let pointer events fall through to the WebGL layer. */
+  pointer-events: none;
+  isolation: isolate;
+}
+
+/* ------------------------------------------------------------------
+   READABILITY SCRIM
+   A soft gradient wedge behind the copy column only. The 3D behind the
+   text gets knocked back ~60%, while the opposite side of the frame
+   stays completely clear — so the scene is never uniformly muddied,
+   which is what a full-screen dim would do.
+   ------------------------------------------------------------------ */
+.chapter-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.chapter-inner.left::before {
+  background: linear-gradient(
+    to right,
+    rgba(var(--scrim), 0.8) 0%,
+    rgba(var(--scrim), 0.58) 28%,
+    rgba(var(--scrim), 0.2) 52%,
+    transparent 70%
+  );
+}
+.chapter-inner.right::before {
+  background: linear-gradient(
+    to left,
+    rgba(var(--scrim), 0.8) 0%,
+    rgba(var(--scrim), 0.58) 28%,
+    rgba(var(--scrim), 0.2) 52%,
+    transparent 70%
+  );
+}
+.chapter-inner.center::before,
+.chapter-inner.table::before,
+.chapter-inner.split::before {
+  background: radial-gradient(
+    76% 62% at 50% 50%,
+    rgba(var(--scrim), 0.86) 0%,
+    rgba(var(--scrim), 0.6) 48%,
+    transparent 84%
+  );
+}
+
+/* ==========================================================================
+   SPLIT LAYOUT — two columns for content that will not fit stacked
+   ========================================================================== */
+.chapter-inner.split {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  text-align: left;
+}
+.chapter-inner.split > * {
+  max-width: none;
+}
+.split-col {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 30rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.chapter-inner a,
+.chapter-inner button,
+.chapter-inner input,
+.chapter-inner textarea,
+.chapter-inner .stat,
+.chapter-inner .chip,
+.chapter-inner .table-wrap {
+  pointer-events: auto;
+}
+
+.chapter-inner.left {
+  align-items: flex-start;
+  text-align: left;
+  max-width: min(100%, 78rem);
+}
+.chapter-inner.right {
+  align-items: flex-end;
+  text-align: right;
+}
+.chapter-inner.center {
+  align-items: center;
+  text-align: center;
+}
+
+/* Keep copy off the middle of the screen where the 3D lives. */
+.chapter-inner.left > * {
+  max-width: 40rem;
+}
+.chapter-inner.right > * {
+  max-width: 40rem;
+}
+.chapter-inner.center > * {
+  max-width: 52rem;
+}
+
+/* --- chapter tag ---------------------------------------------------------- */
+.chapter-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.75rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.76rem, 1vw, 0.86rem);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-shadow: 0 1px 10px var(--halo);
+}
+.ct-num {
+  color: var(--cyan);
+}
+.ct-line {
+  width: 3rem;
+  height: 1px;
+  background: linear-gradient(to right, var(--cyan), transparent);
+}
+.chapter-inner.right .chapter-tag {
+  flex-direction: row-reverse;
+}
+.chapter-inner.right .ct-line {
+  background: linear-gradient(to left, var(--cyan), transparent);
+}
+
+/* --- typography ----------------------------------------------------------- */
+.hero-name {
+  font-size: clamp(3rem, 9.5vw, 9rem);
+  margin: 0;
+}
+.hero-role {
+  margin: 1.3rem 0 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.9rem, 1.7vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  /* Coloured glow rather than a black shadow — keeps the cyan reading as
+     emissive instead of looking like it has a drop shadow. */
+  text-shadow: 0 0 26px rgba(34, 225, 255, 0.45), 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+.hero-tag {
+  margin: 1.6rem auto 0;
+  max-width: 40rem;
+  font-size: clamp(1.1rem, 1.9vw, 1.45rem);
+  font-weight: 400;
+  line-height: 1.62;
+  color: var(--ink-2);
+  text-shadow: 0 1px 10px var(--halo);
+}
+.hero-scroll {
+  margin-top: clamp(2.5rem, 7vh, 5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+.hero-scroll .scroll-hint-line {
+  width: 1px;
+  height: 4rem;
+  animation: scrollPulse 2.4s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scaleY(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.h-lg {
+  font-size: clamp(2.6rem, 6.2vw, 5.4rem);
+  margin: 0 0 1.7rem;
+}
+.h-xl {
+  font-size: clamp(3rem, 7.6vw, 6.6rem);
+  margin: 0 0 1.7rem;
+}
+
+.prose p,
+.lede {
+  font-size: clamp(1.08rem, 1.6vw, 1.3rem);
+  /* 400 disappears against a moving background; 450 holds without reading
+     as bold. Space Grotesk is a variable font, so this is a real weight. */
+  font-weight: 450;
+  line-height: 1.72;
+  color: var(--ink-2);
+  margin: 0 0 1.2rem;
+  text-shadow: 0 1px 10px var(--halo);
+}
+.lede.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- stat grid ------------------------------------------------------------ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+.stat {
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  /* Solid-ish fill, not just backdrop blur — blur alone over a bright neon
+     city still leaves the numerals fighting the background. */
+  background: var(--panel);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stat:hover {
+  transform: translateY(-4px);
+}
+.stat-k {
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(120deg, #fff, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stat-v {
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 0.95vw, 0.78rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* --- experience ----------------------------------------------------------- */
+.xp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+.xp {
+  padding: 0.85rem 0 0.85rem 1.1rem;
+  /* A gradient left edge instead of a dot-and-line timeline: reads as a
+     sequence without needing an extra column of chrome. */
+  border-left: 2px solid transparent;
+  border-image: linear-gradient(to bottom, var(--cyan), var(--violet)) 1;
+}
+.xp-period {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(0.68rem, 0.85vw, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 0.3rem;
+}
+.xp-role {
+  margin: 0 0 0.15rem;
+  font-size: clamp(0.98rem, 1.4vw, 1.18rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.xp-org {
+  display: block;
+  font-size: clamp(0.88rem, 1.15vw, 0.98rem);
+  font-weight: 500;
+  color: rgba(196, 107, 255, 0.95);
+  margin-bottom: 0.35rem;
+}
+.xp-detail {
+  margin: 0;
+  font-size: clamp(0.86rem, 1.1vw, 0.96rem);
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+/* --- skills list (DOM; the 3D planets are visual only) -------------------- */
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+  margin-top: 1.4rem;
+}
+.skill-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  grid-template-areas:
+    'name items'
+    'bar  bar';
+  align-items: baseline;
+  gap: 0.3rem 1rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.skill-row .skill-name {
+  grid-area: name;
+  font-size: clamp(0.98rem, 1.4vw, 1.14rem);
+  font-weight: 700;
+  color: var(--ink);
+}
+.skill-items {
+  grid-area: items;
+  font-family: var(--font-mono);
+  font-size: clamp(0.74rem, 1vw, 0.82rem);
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.skill-bar {
+  grid-area: bar;
+  display: block;
+  height: 2px;
+  margin-top: 0.35rem;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.skill-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--cyan), var(--violet));
+}
+.skill-row[data-accent='violet'] .skill-bar i {
+  background: linear-gradient(to right, var(--violet), var(--purple));
+}
+.skill-row[data-accent='electric'] .skill-bar i {
+  background: linear-gradient(to right, var(--electric), var(--cyan));
+}
+.skill-row[data-accent='purple'] .skill-bar i {
+  background: linear-gradient(to right, var(--purple), var(--cyan));
+}
+
+/* --- hero typewriter ------------------------------------------------------ */
+.typewriter {
+  display: inline-block;
+  min-height: 1.2em;
+}
+.tw-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  vertical-align: -0.14em;
+  background: var(--cyan);
+  box-shadow: 0 0 12px rgba(34, 225, 255, 0.9);
+  animation: caretBlink 1.05s steps(1) infinite;
+}
+@keyframes caretBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Single-line interaction hint used on the otherwise copy-free sections. */
+.hint {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.78rem, 1vw, 0.88rem);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-shadow: 0 1px 10px var(--halo);
+  animation: pulseGlow 2.8s ease-in-out infinite;
+}
+
+.contact-loc {
+  margin: 0.9rem 0 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.78rem, 1vw, 0.86rem);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-shadow: 0 1px 10px var(--halo);
+}
+
+/* --- chips ---------------------------------------------------------------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.6rem;
+  justify-content: inherit;
+}
+.chapter-inner.right .chips {
+  justify-content: flex-end;
+}
+.chip {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  background: var(--panel);
+  font-family: var(--font-mono);
+  font-size: clamp(0.76rem, 1vw, 0.85rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  transition: color 0.35s, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.chip:hover {
+  color: var(--ink);
+  transform: translateY(-3px);
+}
+
+/* Screen-reader / no-WebGL fallback list — visually hidden, still announced. */
+.sr-list {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- contact -------------------------------------------------------------- */
+
+/* ==========================================================================
+   CONTACT FORM
+   --------------------------------------------------------------------------
+   The whole chapter is one 100vh fixed pane that cannot scroll, and it now has
+   to hold a heading, a lede, a three-field form, a row of social links, an
+   address line and a footer. So everything here is sized in vh-aware clamps
+   and the chapter's own rhythm is tightened below — a fixed 1rem gap that
+   looks right at 1080p is what pushes the footer off the bottom on a laptop.
+   ========================================================================== */
+.contact-form {
+  width: min(100%, 34rem);
+  margin: clamp(1.1rem, 2.6vh, 1.9rem) auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.2vh, 0.8rem);
+  text-align: left;
+  /* The pane is pointer-events: none so hover reaches the 3D behind it; the
+     form has to opt back in or none of the fields can be clicked. */
+  pointer-events: auto;
+}
+
+.cf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(0.5rem, 1.2vh, 0.8rem);
+}
+
+.cf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.cf-field > span {
+  font-family: var(--font-mono);
+  font-size: clamp(0.62rem, 0.85vw, 0.7rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.cf-field input,
+.cf-field textarea {
+  width: 100%;
+  padding: 0.62rem 0.85rem;
+  border-radius: 10px;
+  /* Opaque, not glass: these sit directly over a live shader plate and a
+     translucent field makes the caret and the typed text hard to track. */
+  background: var(--panel-solid);
+  border: 1px solid var(--glass-brd);
+  font-family: inherit;
+  font-size: clamp(0.88rem, 1.1vw, 0.95rem);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.cf-field textarea {
+  resize: vertical;
+  min-height: 4.5rem;
+  max-height: 22vh;
+  line-height: 1.5;
+}
+.cf-field input::placeholder,
+.cf-field textarea::placeholder {
+  color: var(--ink-3);
+  opacity: 0.7;
+}
+.cf-field input:focus,
+.cf-field textarea:focus {
+  border-color: color-mix(in srgb, var(--cyan) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 14%, transparent);
+}
+
+.cf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.cf-send,
+.cf-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.72rem 1.5rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: clamp(0.72rem, 0.95vw, 0.8rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.35s, background 0.35s, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cf-send {
+  flex: 1 1 12rem;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--cyan) 55%, transparent);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--cyan) 24%, transparent),
+    color-mix(in srgb, var(--violet) 24%, transparent)
+  );
+  color: var(--ink);
+}
+.cf-send:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--cyan) 90%, transparent);
+  transform: translateY(-2px);
+}
+/* Disabled until there is actually a message to send — a Gmail tab that opens
+   with an empty body is worse than no button at all. */
+.cf-send:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.cf-call {
+  border: 1px solid var(--glass-brd);
+  background: var(--panel);
+  color: var(--ink-2);
+}
+.cf-call:hover {
+  border-color: color-mix(in srgb, var(--cyan) 55%, transparent);
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.cf-alt {
+  margin: 0.1rem 0 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.66rem, 0.9vw, 0.73rem);
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.cf-alt a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+}
+.cf-alt a:hover {
+  color: var(--ink);
+}
+
+/* The contact chapter is the only one that has to fit a form as well as copy,
+   so its vertical rhythm is compressed relative to the other chapters. */
+.chapter-inner.contact .h-xl {
+  font-size: clamp(2rem, 5.2vw, 3.2rem);
+}
+.chapter-inner.contact .lede {
+  margin-top: 0.6rem;
+}
+
+/* ------------------------------------------------------------------
+   SHORT VIEWPORTS
+   The contact pane is `position: fixed` and pointer-events: none, so it
+   cannot scroll — anything that does not fit is simply lost off the top
+   and bottom edges. Rather than risk that, drop the least load-bearing
+   copy first. Measured against the tallest state of the form (three
+   fields, both buttons, the alt link): the full layout needs ~580px of
+   content box, which a 700px-tall window does not have once the
+   chapter's own padding is taken out.
+   ------------------------------------------------------------------ */
+@media (max-height: 800px) {
+  .chapter-inner.contact .h-xl {
+    font-size: clamp(1.6rem, 4.2vw, 2.3rem);
+  }
+  .chapter-inner.contact .lede {
+    display: none;
+  }
+  .chapter-inner.contact .site-foot {
+    display: none;
+  }
+  .cf-field textarea {
+    min-height: 3.4rem;
+  }
+}
+@media (max-height: 640px) {
+  .chapter-inner.contact .cta-row,
+  .cf-alt {
+    display: none;
+  }
+}
+
+.contact-loc a {
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.contact-loc a:hover {
+  color: var(--cyan);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: clamp(1rem, 2.4vh, 1.8rem);
+}
+.site-foot {
+  margin-top: clamp(1.2rem, 3vh, 2.4rem);
+  font-family: var(--font-mono);
+  font-size: clamp(0.72rem, 0.95vw, 0.8rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex;
+  gap: 0.7rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  text-shadow: 0 1px 10px var(--halo);
+}
+
+/* ==========================================================================
+   MAGNETIC BUTTON
+   ========================================================================== */
+.mag-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.05rem 1.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--panel);
+  font-family: var(--font-mono);
+  font-size: clamp(0.78rem, 1vw, 0.86rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--soft);
+  text-decoration: none;
+  overflow: hidden;
+  transition: color 0.4s, border-color 0.4s;
+  will-change: transform;
+}
+.mag-label {
+  position: relative;
+  z-index: 2;
+}
+.mag-glow {
+  position: absolute;
+  inset: -40%;
+  z-index: 1;
+  background: radial-gradient(circle at 50% 120%, rgba(34, 225, 255, 0.55), transparent 62%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.mag-btn:hover .mag-glow {
+  opacity: 1;
+}
+.mag-btn:hover {
+  color: var(--ink);
+  border-color: rgba(34, 225, 255, 0.45);
+}
+.mag-ghost {
+  background: var(--panel);
+  color: var(--ink-3);
+}
+
+/* ==========================================================================
+   NAV
+   ========================================================================== */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem clamp(1.2rem, 4vw, 2.6rem);
+  pointer-events: none;
+}
+.nav > * {
+  pointer-events: auto;
+}
+.nav-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--soft);
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  will-change: transform;
+  text-shadow: 0 1px 10px var(--halo);
+}
+.nav-coord {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  white-space: pre;
+  text-shadow: 0 1px 10px var(--halo);
+}
+.nav-cta {
+  font-family: var(--font-mono);
+  font-size: clamp(0.74rem, 0.95vw, 0.82rem);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-decoration: none;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--panel);
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  transition: color 0.35s, border-color 0.35s;
+  will-change: transform;
+}
+.nav-cta:hover {
+  color: var(--ink);
+  border-color: rgba(34, 225, 255, 0.5);
+}
+
+/* ==========================================================================
+   CHAPTER RAIL
+   ========================================================================== */
+.rail {
+  position: fixed;
+  right: clamp(0.9rem, 2.2vw, 2rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  pointer-events: none;
+}
+.rail > * {
+  pointer-events: auto;
+}
+.rail-svg {
+  width: 26px;
+  height: 46vh;
+  overflow: visible;
+}
+.rail-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Each chapter is a real, chunky tab — the previous version was 0.56rem text
+   with a colour change as the only "selected" signal, which was far too weak
+   to read at a glance against a moving background. */
+.rail-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.6rem 0.95rem;
+  background: var(--panel);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: clamp(0.76rem, 0.95vw, 0.84rem);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition:
+    color 0.35s ease,
+    background 0.35s ease,
+    border-color 0.35s ease,
+    padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  text-shadow: 0 1px 10px var(--halo);
+  overflow: hidden;
+}
+
+/* Left edge bar — the primary "you are here" cue. */
+.rail-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(to bottom, var(--cyan), var(--violet));
+  transform: translateY(-50%);
+  transition: height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rail-label:hover {
+  color: var(--ink);
+  background: rgba(12, 18, 30, 0.62);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* SELECTED */
+.rail-label[data-on='true'] {
+  color: var(--ink);
+  font-weight: 700;
+  padding-left: 1.25rem;
+  background: linear-gradient(
+    100deg,
+    rgba(34, 225, 255, 0.2),
+    rgba(139, 92, 255, 0.16)
+  );
+  border-color: rgba(34, 225, 255, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(34, 225, 255, 0.14),
+    0 10px 30px -12px rgba(34, 225, 255, 0.5);
+}
+.rail-label[data-on='true']::before {
+  height: 62%;
+}
+.rail-label[data-on='true'] .rail-num {
+  color: var(--cyan);
+  opacity: 1;
+}
+
+.rail-num {
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+.rail-name {
+  min-width: 6rem;
+  text-align: left;
+}
+.rail-pct {
+  position: absolute;
+  right: 0;
+  bottom: -3.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  text-shadow: 0 1px 10px var(--halo);
+}
+.rail-pct i {
+  font-style: normal;
+  opacity: 0.5;
+}
+
+/* ==========================================================================
+   LOADER
+   ========================================================================== */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--void);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+.loader-mark {
+  width: clamp(90px, 16vw, 150px);
+  height: clamp(90px, 16vw, 150px);
+}
+.loader-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+.loader-count {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 6vw, 3.6rem);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--soft);
+  font-variant-numeric: tabular-nums;
+}
+.loader-bar {
+  width: min(240px, 52vw);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.loader-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(to right, var(--cyan), var(--violet));
+  transform-origin: left;
+  transition: transform 0.18s linear;
+}
+.loader-line {
+  font-family: var(--font-mono);
+  font-size: clamp(0.72rem, 0.95vw, 0.8rem);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.loader-corner {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: clamp(0.68rem, 0.9vw, 0.76rem);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  color: var(--ink-3);
+}
+.loader-tl {
+  top: 1.6rem;
+  left: 1.6rem;
+}
+.loader-br {
+  bottom: 1.6rem;
+  right: 1.6rem;
+}
+
+/* ==========================================================================
+   IN-WORLD DOM (drei <Html>)
+   ========================================================================== */
+.timeline-card,
+.holo-screen {
+  font-family: var(--font-display);
+  color: var(--soft);
+  user-select: none;
+}
+
+/* Effectively opaque. These sit directly in front of an ADDITIVE shader plate,
+   so any transparency lets that glow straight through the text — which is what
+   made them hard to read. The plate is now a frame and a rim glow; the card
+   provides its own solid ground. */
+.timeline-card {
+  padding: 34px 38px;
+  border-radius: 20px;
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-brd);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    var(--shadow);
+}
+.tc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--ink-3);
+  margin-bottom: 16px;
+}
+.tc-index {
+  color: var(--cyan);
+}
+.tc-event {
+  margin: 0 0 12px;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  color: var(--ink);
+}
+.tc-meta {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-2);
+  text-transform: uppercase;
+}
+.tc-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--violet);
+}
+.tc-place {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 17px;
+  border-radius: 999px;
+  background: linear-gradient(100deg, rgba(34, 225, 255, 0.22), rgba(139, 92, 255, 0.22));
+  border: 1px solid rgba(34, 225, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.tc-note {
+  margin: 16px 0 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+.holo-screen {
+  padding: 30px 34px 34px;
+  border-radius: 16px;
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-brd);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    var(--shadow);
+}
+.hs-chrome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.hs-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.26);
+}
+.hs-path {
+  margin-left: 11px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.hs-title {
+  margin: 0 0 12px;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  color: var(--ink);
+}
+.hs-blurb {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 450;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+.hs-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.hs-stack span {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.hs-cta {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  color: var(--cyan);
+}
+
+.planet-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 230px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  /* Labels float over open space and bright planet rims, so they need their
+     own backing plate — a text-shadow alone isn't enough against a lit
+     atmosphere. */
+  background: var(--panel);
+  text-align: center;
+  user-select: none;
+  transition: opacity 0.4s, transform 0.4s, background 0.4s;
+  opacity: 0.78;
+}
+.planet-label[data-on='true'] {
+  opacity: 1;
+  transform: translateY(-4px);
+  background: var(--panel);
+}
+.pl-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  text-shadow: 0 1px 10px var(--halo);
+}
+.pl-bar {
+  display: block;
+  width: 110px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pl-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.pl-items {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   PROJECT DETAIL
+   ========================================================================== */
+.detail {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(1.5rem, 5vh, 3rem);
+  transform: translateX(-50%);
+  z-index: 75;
+  width: min(92vw, 40rem);
+}
+.detail-inner {
+  border-radius: 20px;
+  padding: 1.8rem 2rem;
+  background: var(--panel-solid);
+}
+.detail-inner h3 {
+  margin: 0.7rem 0 0.8rem;
+  font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  color: var(--ink);
+}
+.detail-inner p {
+  margin: 0 0 1.2rem;
+  font-size: clamp(1.02rem, 1.4vw, 1.15rem);
+  font-weight: 450;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+.detail-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.3rem;
+}
+.detail-stack span {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.detail-actions {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.detail-close {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 1rem 1.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  will-change: transform;
+}
+
+/* ==========================================================================
+   ADMIN CONSOLE
+   ========================================================================== */
+.admin-corner {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  z-index: 80;
+  opacity: 0;
+}
+
+.admin-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: color-mix(in srgb, var(--void) 82%, transparent);
+  backdrop-filter: blur(18px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.75rem, 3vw, 2.5rem);
+}
+
+.admin {
+  width: min(100%, 54rem);
+  max-height: 88vh;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 1.7rem 1.1rem;
+  border-bottom: 1px solid var(--glass-brd);
+}
+.admin-head h2 {
+  margin: 0.35rem 0 0;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+.admin-x {
+  background: none;
+  border: 1px solid var(--glass-brd);
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  color: var(--ink-3);
+  font-size: 0.8rem;
+}
+
+.admin-lock {
+  padding: 2.6rem 1.7rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.admin-hint {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.9;
+}
+.admin-hint code {
+  color: var(--cyan);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.admin-error {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ff5c7a;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.9rem 1.7rem 0;
+  flex-wrap: wrap;
+}
+.admin-tab {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.42rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+.admin-tab.on {
+  color: var(--ink);
+  border-color: rgba(34, 225, 255, 0.4);
+  background: rgba(34, 225, 255, 0.08);
+}
+
+.admin-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.2rem 1.7rem;
+}
+.admin-body::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.admin-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.admin-sub {
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.admin-item {
+  border: 1px solid var(--glass-brd);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.018);
+}
+.admin-item.open {
+  border-color: rgba(34, 225, 255, 0.28);
+}
+.admin-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.2rem;
+}
+.admin-item-title {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0.65rem 0.7rem;
+  color: var(--soft);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.admin-caret {
+  color: var(--cyan);
+  font-size: 0.7rem;
+}
+.admin-item-tools {
+  display: flex;
+  gap: 0.2rem;
+}
+.admin-item-tools button {
+  background: none;
+  border: 1px solid var(--glass-brd);
+  border-radius: 7px;
+  width: 26px;
+  height: 26px;
+  color: var(--ink-3);
+  font-size: 0.7rem;
+}
+.admin-item-tools button.danger:hover,
+.admin-btn.danger:hover {
+  color: #ff5c7a;
+  border-color: rgba(255, 92, 122, 0.4);
+}
+.admin-item-body {
+  padding: 0.4rem 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.admin-item-body.compact {
+  padding-bottom: 0.7rem;
+}
+
+/* ==========================================================================
+   SHOW / HIDE STATE
+   --------------------------------------------------------------------------
+   A hidden entry has to look obviously inert at a glance, or the console
+   quietly lies to you about what the site is showing. Dimming alone is too
+   subtle next to a collapsed row, so hidden rows also get a strikethrough
+   title and a literal "hidden" tag.
+   ========================================================================== */
+.admin-list-meta {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 0 0.2rem 0.15rem;
+}
+
+.admin-item.hidden-item {
+  opacity: 0.5;
+  border-style: dashed;
+}
+.admin-item.hidden-item .admin-item-title {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+}
+/* The controls stay fully legible — you have to be able to find the toggle
+   that switches it back on. */
+.admin-item.hidden-item .admin-item-tools {
+  opacity: 1;
+}
+
+.admin-flag {
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-brd);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: none;
+}
+
+.admin-item-tools .admin-eye {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+.admin-item-tools .admin-eye:hover {
+  color: var(--cyan);
+  border-color: rgba(34, 225, 255, 0.45);
+}
+.admin-item-tools .admin-eye.off {
+  border-color: rgba(255, 176, 92, 0.42);
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.admin-field > span {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.admin-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--glass-brd);
+  border-radius: 9px;
+  padding: 0.6rem 0.75rem;
+  color: var(--soft);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.3s, background 0.3s;
+  resize: vertical;
+}
+.admin-input:focus {
+  border-color: rgba(34, 225, 255, 0.5);
+  background: rgba(34, 225, 255, 0.05);
+}
+.admin-json {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+.admin-field input[type='range'] {
+  accent-color: var(--cyan);
+}
+
+.admin-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 1rem 1.7rem 1.2rem;
+  border-top: 1px solid var(--glass-brd);
+  flex-wrap: wrap;
+}
+.admin-foot-left,
+.admin-foot-right {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.admin-btn {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--glass-brd);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+.admin-btn:hover {
+  color: var(--ink);
+  border-color: rgba(34, 225, 255, 0.4);
+}
+.admin-btn.primary {
+  background: linear-gradient(100deg, rgba(34, 225, 255, 0.2), rgba(139, 92, 255, 0.2));
+  border-color: rgba(34, 225, 255, 0.42);
+  color: var(--ink);
+}
+.admin-btn.dashed {
+  border-style: dashed;
+  width: 100%;
+  margin-top: 0.3rem;
+}
+.admin-toast {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+/* ==========================================================================
+   EASTER EGGS
+   ========================================================================== */
+.egg-banner {
+  position: fixed;
+  left: 50%;
+  top: 5.2rem;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(196, 107, 255, 0.5);
+  background: rgba(196, 107, 255, 0.12);
+  backdrop-filter: blur(12px);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  color: #e9d6ff;
+  pointer-events: none;
+}
+.egg-help {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 210;
+  border-radius: 18px;
+  padding: 1.5rem 1.8rem;
+  width: min(90vw, 24rem);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 2;
+  color: var(--ink-3);
+}
+.egg-help strong {
+  display: block;
+  margin-bottom: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  color: var(--cyan);
+}
+.egg-help ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.egg-help kbd {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  margin-right: 0.5rem;
+  border: 1px solid var(--glass-brd);
+  border-radius: 5px;
+  font-size: 0.66rem;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+/* Below this the tabs would start crowding the copy column, so drop to
+   number-only chips — still clearly showing which chapter is active, and the
+   reserved gutter shrinks to match. */
+@media (max-width: 1180px) {
+  :root {
+    --rail-w: 6rem;
+  }
+  .rail-name {
+    display: none;
+  }
+  .rail-label {
+    padding: 0.6rem 0.7rem;
+    justify-content: center;
+  }
+  .rail-label[data-on='true'] {
+    padding-left: 0.9rem;
+  }
+  .rail-svg {
+    height: 34vh;
+  }
+}
+
+/* Split becomes a single column — but the pane still can't scroll, so the
+   type scale has to come down with it or the content clips. */
+@media (max-width: 980px) {
+  .chapter-inner.split {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.1rem;
+  }
+  .split-col {
+    max-width: 100%;
+    width: 100%;
+  }
+  .chapter-inner.split .h-lg {
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    margin-bottom: 0.9rem;
+  }
+  .chapter-inner.split .stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 1rem;
+  }
+  .chapter-inner.split .stat {
+    padding: 0.7rem 0.6rem;
+  }
+  .chapter-inner.split .stat-k {
+    font-size: clamp(1.15rem, 3vw, 1.6rem);
+  }
+  .chapter-inner.split .stat-v {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+  }
+  .xp-detail {
+    display: none; /* keep role + org + period, drop the prose */
+  }
+}
+
+@media (max-width: 780px) {
+  :root {
+    /* svg track (26px) + its 0.6rem inset, rounded up. The labels are hidden
+       at this width so only the track needs clearing. */
+    --rail-w: 3.5rem;
+  }
+  .nav-coord {
+    display: none;
+  }
+  .rail {
+    right: 0.5rem;
+  }
+  .rail-labels {
+    display: none;
+  }
+  .rail-svg {
+    width: 18px;
+  }
+  /* Centred layouts span the full width, so the track would sit on top of
+     them — pull it out of the flow of the reel/contact panes. */
+  .rail-pct {
+    bottom: -2.6rem;
+    font-size: 0.66rem;
+  }
+  .table-wrap {
+    max-height: 62vh;
+  }
+  .chapter-inner.left,
+  .chapter-inner.right {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .chapter-inner.right .chapter-tag {
+    flex-direction: row;
+  }
+  .chapter-inner.right .ct-line {
+    background: linear-gradient(to right, var(--cyan), transparent);
+  }
+  .chapter-inner.right .chips {
+    justify-content: flex-start;
+  }
+  /* Push copy to the lower third so it never sits on top of the 3D subject. */
+  .chapter-inner {
+    justify-content: flex-end;
+    padding-bottom: clamp(3rem, 10vh, 6rem);
+  }
+  .chapter-inner.hero,
+  .chapter-inner.contact,
+  .chapter-inner.table,
+  .chapter-inner.split {
+    justify-content: center;
+    padding-bottom: clamp(2rem, 6vh, 4rem);
+  }
+  .chapter-inner.hero,
+  .chapter-inner.contact {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* On phones the copy is full-width at the bottom, so the side-wedge scrim
+     is the wrong shape — swap it for a bottom-up gradient. */
+  .chapter-inner.left::before,
+  .chapter-inner.right::before {
+    background: linear-gradient(
+      to top,
+      rgba(var(--scrim), 0.92) 0%,
+      rgba(var(--scrim), 0.78) 38%,
+      rgba(var(--scrim), 0.3) 62%,
+      transparent 82%
+    );
+  }
+  .chapter-inner.center::before {
+    background: radial-gradient(
+      88% 46% at 50% 50%,
+      rgba(var(--scrim), 0.85) 0%,
+      rgba(var(--scrim), 0.6) 50%,
+      transparent 84%
+    );
+  }
+
+  /* Constrain the largest display sizes so long headings don't overflow. */
+  .h-lg {
+    font-size: clamp(2.1rem, 8.5vw, 3rem);
+  }
+  .h-xl {
+    font-size: clamp(2.4rem, 10vw, 3.4rem);
+  }
+  .hero-name {
+    font-size: clamp(2.6rem, 12vw, 4rem);
+  }
+  .prose p,
+  .lede {
+    font-size: clamp(1rem, 4vw, 1.15rem);
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-row {
+    grid-template-columns: 1fr;
+  }
+  .detail {
+    width: 94vw;
+  }
+
+  /* Two 50% columns leave neither field wide enough to read what you typed. */
+  .cf-row {
+    grid-template-columns: 1fr;
+  }
+  .contact-form {
+    width: 100%;
+  }
+  .cf-actions {
+    flex-direction: column;
+  }
+  .cf-send,
+  .cf-call {
+    width: 100%;
+    justify-content: center;
+  }
+  /* The links row is the least load-bearing thing in the chapter and the
+     first to cost the footer its place — the same accounts are in the nav. */
+  .chapter-inner.contact .cta-row {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   DAYLIGHT SURFACE TREATMENT
+   --------------------------------------------------------------------------
+   On a bright background a dark drop-shadow reads as a smudge, so copy gets a
+   light halo instead to separate it from the 3D behind.
+   ========================================================================== */
+.prose p,
+.lede,
+.hero-tag,
+.chapter-tag,
+.site-foot,
+.contact-loc,
+.rail-label,
+.rail-pct,
+.nav-mark,
+.nav-coord {
+  text-shadow: 0 1px 10px var(--halo);
+}
+
+.hero-role {
+  text-shadow: 0 1px 10px var(--halo);
+}
+
+.stat-k {
+  background: linear-gradient(120deg, var(--ink), var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.dt-badge,
+.dt-link {
+  background: linear-gradient(100deg, color-mix(in srgb, var(--cyan) 16%, transparent), color-mix(in srgb, var(--violet) 16%, transparent));
+  border-color: color-mix(in srgb, var(--cyan) 48%, transparent);
+  color: var(--ink);
+}
+
+.dt-stack span,
+.detail-stack span,
+.chip,
+.skill-row,
+.mag-btn,
+.nav-cta,
+.rail-label {
+  border-color: var(--glass-brd);
+}
+
+.rail-label[data-on='true'] {
+  background: linear-gradient(100deg, color-mix(in srgb, var(--cyan) 20%, transparent), color-mix(in srgb, var(--violet) 15%, transparent));
+  border-color: color-mix(in srgb, var(--cyan) 52%, transparent);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cyan) 14%, transparent),
+    0 10px 26px -14px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.admin-backdrop {
+  background: rgba(226, 231, 240, 0.72);
+}
+.cursor-dot {
+  background: var(--ink);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cyan) 80%, transparent);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* ==========================================================================
+   DATA TABLES — awards + work
+   --------------------------------------------------------------------------
+   Everything visible at once. These replaced a one-card-at-a-time carousel:
+   a results list only means something when you can compare the rows, and the
+   carousel also had four separate ways of hiding rows by accident.
+
+   The sticky pane cannot scroll, so the table body gets its own max-height
+   and scrolls internally instead.
+   ========================================================================== */
+.chapter-inner.table {
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  padding-left: clamp(1rem, 4vw, 3rem);
+  padding-right: max(var(--rail-w), clamp(1rem, 4vw, 3rem));
+}
+.chapter-inner.table > * {
+  max-width: min(100%, 62rem);
+  width: 100%;
+}
+
+.table-wrap {
+  width: 100%;
+  max-height: 56vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--panel-brd);
+  border-radius: 16px;
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+.table-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(6, 9, 15, 0.97);
+  backdrop-filter: blur(8px);
+  text-align: left;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.66rem, 0.9vw, 0.74rem);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--panel-brd);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.9rem 1rem;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--ink-2);
+}
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.data-table tbody tr {
+  transition: background 0.3s ease;
+}
+.data-table tbody tr:hover {
+  background: rgba(34, 225, 255, 0.05);
+}
+
+.dt-num {
+  width: 3rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+.dt-right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dt-main {
+  display: block;
+  font-size: clamp(1rem, 1.4vw, 1.14rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+.dt-sub {
+  display: block;
+  margin-top: 0.22rem;
+  font-size: clamp(0.8rem, 1.05vw, 0.88rem);
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+.dt-mono {
+  font-family: var(--font-mono);
+  font-size: clamp(0.78rem, 1vw, 0.86rem);
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+
+.dt-badge {
+  display: inline-block;
+  padding: 0.34rem 0.8rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--cyan) 22%, transparent),
+    color-mix(in srgb, var(--violet) 20%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--cyan) 46%, transparent);
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 0.95vw, 0.78rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.dt-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.dt-stack span {
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-brd);
+  font-family: var(--font-mono);
+  font-size: clamp(0.66rem, 0.9vw, 0.74rem);
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.dt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 40%, transparent);
+  background: color-mix(in srgb, var(--cyan) 10%, transparent);
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 0.95vw, 0.78rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 0.3s, border-color 0.3s;
+}
+.dt-link:hover {
+  background: color-mix(in srgb, var(--cyan) 22%, transparent);
+  border-color: color-mix(in srgb, var(--cyan) 80%, transparent);
+}
+
+/* Heading a size down from the other chapters — the table is the subject. */
+.h-md {
+  font-size: clamp(1.9rem, 4.4vw, 3.4rem);
+  margin: 0 0 1.1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Narrow screens: a 5-column table can't shrink, so each row becomes a block
+   with its header text carried in via data-label.
+   -------------------------------------------------------------------------- */
+@media (max-width: 860px) {
+  .data-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .data-table tbody tr {
+    display: block;
+    padding: 0.85rem 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .data-table td {
+    display: grid;
+    grid-template-columns: 5.2rem 1fr;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.2rem 0;
+    border: 0;
+  }
+  .data-table td::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .dt-right {
+    text-align: left;
+  }
+  .table-wrap {
+    max-height: 62vh;
+  }
+}
