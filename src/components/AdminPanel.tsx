@@ -25,10 +25,11 @@ import type {
  *   3. Visit the URL with `#console`
  *   4. Press and hold the bottom-left corner pixel for 900ms (mobile)
  *
- * Then the passphrase gate. The passphrase itself is NOT in this file — it is
- * checked by POST /api/unlock against the server-only ADMIN_PASSPHRASE
- * environment variable, so it never ships in the browser bundle. Change it in
- * .env.local for dev, or in Vercel's environment variables for production.
+ * Then the passphrase gate. On a server deployment it is checked by
+ * POST /api/unlock against the server-only ADMIN_PASSPHRASE environment
+ * variable. On a static host (GitHub Pages) that route cannot exist, so the
+ * check falls back to NEXT_PUBLIC_ADMIN_PASSPHRASE — which is inlined into
+ * the bundle and is therefore only a casual gate, not real security.
  * ============================================================================
  */
 
@@ -129,6 +130,8 @@ export function AdminPanel() {
     setChecking(true);
     setError('');
 
+    let ok = false;
+
     try {
       const res = await fetch('/api/unlock', {
         method: 'POST',
@@ -138,24 +141,40 @@ export function AdminPanel() {
       const data = (await res.json()) as { ok?: boolean; reason?: string };
 
       if (data.ok) {
-        setUnlocked(true);
-        setPass('');
-        try {
-          sessionStorage.setItem(UNLOCK_KEY, '1');
-        } catch {
-          /* private mode — unlock just won't persist across reloads */
-        }
+        ok = true;
       } else {
         setError(data.reason ?? 'Access denied');
         setPass('');
         window.setTimeout(() => setError(''), 2600);
       }
     } catch {
-      // Network failure, or the route is missing (e.g. a static export).
-      setError('Could not reach the server');
-      window.setTimeout(() => setError(''), 2600);
+      // No server (static export on GitHub Pages): check the passphrase
+      // against NEXT_PUBLIC_ADMIN_PASSPHRASE, inlined into the bundle at
+      // build time. The server route (src/app/api/unlock) does this for real
+      // deployments; here it can only ever be a speed bump, never real auth.
+      const local = process.env.NEXT_PUBLIC_ADMIN_PASSPHRASE;
+      ok = Boolean(local && pass === local);
+      if (!ok) {
+        setError(
+          local
+            ? 'Access denied'
+            : 'No passphrase configured — set NEXT_PUBLIC_ADMIN_PASSPHRASE to unlock'
+        );
+        setPass('');
+        window.setTimeout(() => setError(''), 2600);
+      }
     } finally {
       setChecking(false);
+    }
+
+    if (ok) {
+      setUnlocked(true);
+      setPass('');
+      try {
+        sessionStorage.setItem(UNLOCK_KEY, '1');
+      } catch {
+        /* private mode — unlock just won't persist across reloads */
+      }
     }
   };
 
