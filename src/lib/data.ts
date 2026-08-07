@@ -234,44 +234,6 @@ export const DEFAULT_CONTENT: Content = {
       accent: 'violet',
     },
     {
-      id: 'p3',
-      title: 'DU Navigators LFR',
-      blurb:
-        'Custom line-follower robot control and navigation software, engineered in C++ for robotics competitions.',
-      stack: ['C++', 'Robotics', 'Embedded'],
-      href: 'https://github.com/farhanlabibahan/DU_Navigators',
-      accent: 'electric',
-    },
-    {
-      id: 'p4',
-      title: 'Banking Software',
-      blurb:
-        'A console-based secure banking simulation — account management, deposits and full transaction tracking.',
-      stack: ['C++', 'Data Structures', 'Database'],
-      href: 'https://github.com/farhanlabibahan/BankingSoftware',
-      accent: 'purple',
-    },
-    {
-      id: 'p5',
-      title: 'Cinematic Editing',
-      blurb:
-        'Video editing portfolio — colour grading and cinematic sound design across short-form and long-form work.',
-      stack: ['DaVinci Resolve', 'Colour Grading', 'Sound Design'],
-      href: 'https://sites.google.com/view/farhanlabibahan',
-      genre: 'Cinematic',
-      accent: 'cyan',
-    },
-    {
-      id: 'p6',
-      title: 'Documentary & Trailer Editing',
-      blurb:
-        'Game project trailers, short films, tour vlogs and documentary cuts — pacing, motion and titling.',
-      stack: ['CapCut', 'YouTube', 'Trailer Design'],
-      href: 'https://sites.google.com/view/farhanlabibahan',
-      genre: 'Documentary & Trailer',
-      accent: 'violet',
-    },
-    {
       id: 'p7',
       title: 'CloudCare',
       blurb:
