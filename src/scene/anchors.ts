@@ -56,6 +56,8 @@ export const STOPS: Stop[] = [
   { id: 'awards', pos: [1.28, 1.74, 0.92], look: [2.28, 2.02, -1.02], fov: 40, focus: 'wall' },
   // Square on to the CRT, close.
   { id: 'work', pos: [0.02, 1.18, 1.12], look: [0, 1.15, -0.4], fov: 38, focus: 'crt' },
+  // Slight push to the right of the desk, reviewing footage on the monitor.
+  { id: 'editing', pos: [0.56, 1.2, 1.3], look: [0.1, 1.16, -0.42], fov: 40, focus: 'crt' },
   // Pull back and rise, the window filling the frame behind the desk.
   { id: 'contact', pos: [0, 1.58, 2.5], look: [0, 1.7, -1.05], fov: 44, focus: 'window' },
 ];

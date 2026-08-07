@@ -61,6 +61,7 @@ export const SECTIONS = [
   'journey',
   'awards',
   'work',
+  'editing',
   'contact',
 ] as const;
 
@@ -73,6 +74,7 @@ export const SECTION_LABELS: Record<SectionId, string> = {
   journey: 'Journey',
   awards: 'Awards',
   work: 'Work',
+  editing: 'Editing',
   contact: 'Contact',
 };
 

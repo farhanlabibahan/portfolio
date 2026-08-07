@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { SplitText, Reveal } from '@/components/SplitText';
 import { MagneticButton } from '@/components/MagneticButton';
 import { useContent } from '@/lib/store';
-import { visible } from '@/lib/data';
+import { visible, videoUrl, videoThumb } from '@/lib/data';
 import {
   SECTIONS,
   SECTION_LABELS,
@@ -248,7 +248,7 @@ function mailtoUrl(to: string, subject: string, body: string) {
   return `mailto:${to}?${q.toString()}`;
 }
 
-function ContactForm({ to, phone }: { to: string; phone?: string }) {
+function ContactForm({ to }: { to: string }) {
   const [name, setName] = useState('');
   const [from, setFrom] = useState('');
   const [message, setMessage] = useState('');
@@ -327,17 +327,6 @@ function ContactForm({ to, phone }: { to: string; phone?: string }) {
         <button type="submit" className="cf-send" disabled={!ready} data-magnetic>
           <span aria-hidden>✉</span> Send via Gmail
         </button>
-
-        {phone && (
-          <a
-            className="cf-call"
-            href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-            onMouseEnter={() => setCursor('hover')}
-            onMouseLeave={() => setCursor('default')}
-          >
-            <span aria-hidden>☎</span> Call
-          </a>
-        )}
       </div>
 
       <p className="cf-alt">
@@ -351,6 +340,49 @@ function ContactForm({ to, phone }: { to: string; phone?: string }) {
         </a>
       </p>
     </form>
+  );
+}
+
+/**
+ * Wraps a vertically scrollable pane (tables, video grid) with a bottom fade
+ * and a "scroll" cue that only appear while there is actually more content
+ * below the clip edge. The chapter panes are fixed and cannot scroll, so a
+ * list that outgrows its box would otherwise look cut off with no hint that
+ * it keeps going.
+ */
+function ScrollFade({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const hasOverflow = el.scrollHeight - el.clientHeight > 4;
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+      setMore(hasOverflow && !atEnd);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  return (
+    <div className={`scroll-fade${more ? ' more' : ''}`}>
+      <div ref={ref} className={`scroll-fade-pane ${className}`}>
+        {children}
+      </div>
+      <span className="scroll-fade-cue" aria-hidden>
+        Scroll <span className="sf-chev" />
+      </span>
+    </div>
   );
 }
 
@@ -381,6 +413,7 @@ export function Sections() {
   const experience = useMemo(() => visible(content.experience), [content.experience]);
   const achievements = useMemo(() => visible(content.achievements), [content.achievements]);
   const projects = useMemo(() => visible(content.projects), [content.projects]);
+  const videos = useMemo(() => visible(content.videos), [content.videos]);
   const links = useMemo(
     () => visible(content.links).filter((l) => !l.href.startsWith('mailto:')),
     [content.links]
@@ -485,41 +518,43 @@ export function Sections() {
         <ChapterTag index={3} />
         <SplitText as="h2" text="Awards." className="display h-md" stagger={0.03} />
 
-        <Reveal delay={0.12} className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th className="dt-num">#</th>
-                <th>Event</th>
-                <th>Category</th>
-                <th>Team</th>
-                <th className="dt-right">Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              {achievements.map((a, i) => (
-                <tr key={a.id}>
-                  <td className="dt-num" data-label="#">
-                    {String(i + 1).padStart(2, '0')}
-                  </td>
-                  <td data-label="Event">
-                    <span className="dt-main">{a.event}</span>
-                    <span className="dt-sub">
-                      {a.year}
-                      {a.note ? ` · ${a.note}` : ''}
-                    </span>
-                  </td>
-                  <td data-label="Category">{a.category}</td>
-                  <td className="dt-mono" data-label="Team">
-                    {a.team}
-                  </td>
-                  <td className="dt-right" data-label="Result">
-                    <span className="dt-badge">{a.placement}</span>
-                  </td>
+        <Reveal delay={0.12}>
+          <ScrollFade className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="dt-num">#</th>
+                  <th>Event</th>
+                  <th>Category</th>
+                  <th>Team</th>
+                  <th className="dt-right">Result</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {achievements.map((a, i) => (
+                  <tr key={a.id}>
+                    <td className="dt-num" data-label="#">
+                      {String(i + 1).padStart(2, '0')}
+                    </td>
+                    <td data-label="Event">
+                      <span className="dt-main">{a.event}</span>
+                      <span className="dt-sub">
+                        {a.year}
+                        {a.note ? ` · ${a.note}` : ''}
+                      </span>
+                    </td>
+                    <td data-label="Category">{a.category}</td>
+                    <td className="dt-mono" data-label="Team">
+                      {a.team}
+                    </td>
+                    <td className="dt-right" data-label="Result">
+                      <span className="dt-badge">{a.placement}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollFade>
         </Reveal>
       </Shell>
 
@@ -528,86 +563,146 @@ export function Sections() {
         <ChapterTag index={4} />
         <SplitText as="h2" text="Work." className="display h-md" stagger={0.03} />
 
-        <Reveal delay={0.12} className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th className="dt-num">#</th>
-                <th>Project</th>
-                <th>Stack</th>
-                <th className="dt-right">Link</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((p, i) => (
-                <tr key={p.id} data-accent={p.accent}>
-                  <td className="dt-num" data-label="#">
-                    {String(i + 1).padStart(2, '0')}
-                  </td>
-                  <td data-label="Project">
-                    <span className="dt-main">{p.title}</span>
-                    <span className="dt-sub">{p.blurb}</span>
-                  </td>
-                  <td data-label="Stack">
-                    <span className="dt-stack">
-                      {p.stack.map((tech) => (
-                        <span key={tech}>{tech}</span>
-                      ))}
-                    </span>
-                  </td>
-                  <td className="dt-right" data-label="Link">
-                    {p.href && p.href !== '#' ? (
-                      <a
-                        className="dt-link"
-                        href={p.href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        onMouseEnter={() => setCursor('hover')}
-                        onMouseLeave={() => setCursor('default')}
-                      >
-                        {p.href.includes('github.com') ? 'GitHub' : 'View'}{' '}
-                        <span aria-hidden>↗</span>
-                      </a>
-                    ) : (
-                      <span className="dt-sub">—</span>
-                    )}
-                  </td>
+        <Reveal delay={0.12}>
+          <ScrollFade className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="dt-num">#</th>
+                  <th>Project</th>
+                  <th>Stack</th>
+                  <th className="dt-right">Link</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {projects.map((p, i) => (
+                  <tr key={p.id} data-accent={p.accent}>
+                    <td className="dt-num" data-label="#">
+                      {String(i + 1).padStart(2, '0')}
+                    </td>
+                    <td data-label="Project">
+                      <span className="dt-main">{p.title}</span>
+                      {p.genre && <span className="dt-genre">{p.genre}</span>}
+                      <span className="dt-sub">{p.blurb}</span>
+                    </td>
+                    <td data-label="Stack">
+                      <span className="dt-stack">
+                        {p.stack.map((tech) => (
+                          <span key={tech}>{tech}</span>
+                        ))}
+                      </span>
+                    </td>
+                    <td className="dt-right" data-label="Link">
+                      <span className="dt-links">
+                        {p.href && p.href !== '#' ? (
+                          <a
+                            className="dt-link"
+                            href={p.href}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            onMouseEnter={() => setCursor('hover')}
+                            onMouseLeave={() => setCursor('default')}
+                          >
+                            {p.href.includes('github.com') ? 'GitHub' : 'View'}{' '}
+                            <span aria-hidden>↗</span>
+                          </a>
+                        ) : (
+                          <span className="dt-sub">—</span>
+                        )}
+                        {p.video && (
+                          <a
+                            className="dt-link dt-link-video"
+                            href={p.video}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            onMouseEnter={() => setCursor('hover')}
+                            onMouseLeave={() => setCursor('default')}
+                          >
+                            <span aria-hidden>▶</span> Watch
+                          </a>
+                        )}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollFade>
         </Reveal>
       </Shell>
 
-      {/* ================= 06 — CONTACT ================= */}
-      <Shell id="contact" align="center" className="contact" last>
+      {/* ================= 06 — VIDEO EDITING ================= */}
+      <Shell id="editing" align="table">
         <ChapterTag index={5} />
+        <SplitText as="h2" text="Video Editing." className="display h-md" stagger={0.03} />
+
+        <Reveal delay={0.12}>
+          <ScrollFade className="video-grid">
+            {videos.map((v, i) => (
+              <Reveal key={v.id} delay={0.14 + i * 0.07} className="video-cell">
+                <a
+                  className="video-card"
+                  href={videoUrl(v.videoId)}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  data-accent={v.accent}
+                  onMouseEnter={() => setCursor('hover')}
+                  onMouseLeave={() => setCursor('default')}
+                >
+                  <span className="video-thumb">
+                    <img
+                      src={videoThumb(v.videoId)}
+                      alt={v.title}
+                      loading="lazy"
+                      width={480}
+                      height={360}
+                    />
+                    <span className="video-play" aria-hidden>
+                      <span>▶</span>
+                    </span>
+                  </span>
+                  <span className="video-body">
+                    <span className="video-title">{v.title}</span>
+                    <span className="video-note">{v.note}</span>
+                    <span className="video-cta">
+                      Watch on YouTube <span aria-hidden>↗</span>
+                    </span>
+                  </span>
+                </a>
+              </Reveal>
+            ))}
+          </ScrollFade>
+        </Reveal>
+      </Shell>
+
+      {/* ================= 07 — CONTACT ================= */}
+      <Shell id="contact" align="center" className="contact" last>
+        <ChapterTag index={6} />
         <SplitText
           as="h2"
           text="Let's build something."
           className="display h-xl text-gradient"
           stagger={0.026}
         />
-        <Reveal delay={0.22}>
-          <p className="lede center">
-            Have a project, an opportunity, or just want to talk about interactive code? Drop a
-            line.
-          </p>
+        <Reveal delay={0.26}>
+          <ContactForm to={content.email} />
         </Reveal>
-        <Reveal delay={0.3}>
-          <ContactForm to={content.email} phone={content.phone} />
-        </Reveal>
-        <Reveal delay={0.42} className="cta-row">
+        <Reveal delay={0.38} className="contact-links">
           {links.map((l) => (
-            <MagneticButton key={l.id} href={l.href} variant="ghost">
+            <a
+              key={l.id}
+              href={l.href}
+              target="_blank"
+              rel="noreferrer noopener"
+              onMouseEnter={() => setCursor('hover')}
+              onMouseLeave={() => setCursor('default')}
+            >
               {l.label}
-            </MagneticButton>
+            </a>
           ))}
         </Reveal>
-        <Reveal delay={0.52}>
+        <Reveal delay={0.48}>
           <p className="contact-loc">
-            {content.location}
-            <span className="foot-sep">·</span>
             <a
               href={`mailto:${content.email}`}
               onMouseEnter={() => setCursor('hover')}
@@ -615,28 +710,7 @@ export function Sections() {
             >
               {content.email}
             </a>
-            {content.phone && (
-              <>
-                <span className="foot-sep">·</span>
-                <a
-                  href={`tel:${content.phone.replace(/[^\d+]/g, '')}`}
-                  onMouseEnter={() => setCursor('hover')}
-                  onMouseLeave={() => setCursor('default')}
-                >
-                  {content.phone}
-                </a>
-              </>
-            )}
           </p>
-        </Reveal>
-        <Reveal delay={0.6}>
-          <footer className="site-foot">
-            <span>
-              © {new Date().getFullYear()} {content.name}
-            </span>
-            <span className="foot-sep">·</span>
-            <span>Built with Next.js, Three.js &amp; GLSL</span>
-          </footer>
         </Reveal>
       </Shell>
     </div>

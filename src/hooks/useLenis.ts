@@ -23,6 +23,9 @@ export function useLenis() {
       touchMultiplier: 1.4,
       lerp: reduced ? 1 : 0.085,
       smoothWheel: !reduced,
+      // Scrollable panes (tables, video grid) scroll themselves instead of
+      // hijacking the wheel and scrolling the page underneath them.
+      allowNestedScroll: true,
     });
 
     let last = 0;

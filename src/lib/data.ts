@@ -47,8 +47,30 @@ export type Project = Hideable & {
   blurb: string;
   stack: string[];
   href?: string;
+  /** Optional YouTube link — gameplay / full-run demo of the project. */
+  video?: string;
+  /** Editing style, shown as a chip on the Work row — e.g. "Cinematic",
+   *  "Documentary", "Trailer". Absent for non-video builds. */
+  genre?: string;
   accent: 'cyan' | 'violet' | 'electric' | 'purple';
 };
+
+export type Video = Hideable & {
+  id: string;
+  /** Video title as it appears on YouTube. */
+  title: string;
+  /** One-liner describing the edit / the piece. */
+  note: string;
+  /** YouTube video ID — href and thumbnail are derived from it. */
+  videoId: string;
+  accent: 'cyan' | 'violet' | 'electric' | 'purple';
+};
+
+/** YouTube watch URL for a video ID. */
+export const videoUrl = (videoId: string) => `https://youtube.com/watch?v=${videoId}`;
+
+/** High-quality thumbnail for a video ID. */
+export const videoThumb = (videoId: string) => `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
 export type SkillGroup = Hideable & {
   id: string;
@@ -83,6 +105,7 @@ export type Content = {
   achievements: Achievement[];
   experience: Experience[];
   projects: Project[];
+  videos: Video[];
   skills: SkillGroup[];
   links: Link[];
   email: string;
@@ -108,12 +131,11 @@ export const DEFAULT_CONTENT: Content = {
   roles: ['CSE Student.', 'Developer.', 'Video Editor.', 'Tech Enthusiast.'],
   tagline:
     'Bridging the gap between cutting-edge code and breathtaking aesthetics.',
-  location: 'Dhaka, Bangladesh',
+  location: 'Badda, Dhaka, Bangladesh',
 
   about: [
-    'I am a Computer Science & Engineering student at the University of Dhaka — a hardworking and dedicated learner who enjoys building projects, experimenting with new ideas, and improving through consistent practice.',
-    'I am especially interested in combining creativity with technology: building useful applications, editing premium video, and working on real-world projects that push me technically and personally.',
-    'Most of what I have learned came from the clock running down — 24-hour hackathons, datathons where the leaderboard updates every ten minutes, and agentic AI builds that have to work on the first demo.',
+    'CSE undergrad at the University of Dhaka — building software, editing film, and competing in datathons and AI hackathons.',
+    'Most of what I know came from the clock running down: 24-hour hackathons, live-leaderboard datathons, and AI builds that have to work on the first demo.',
   ],
 
   stats: [
@@ -165,20 +187,20 @@ export const DEFAULT_CONTENT: Content = {
 
   experience: [
     {
-      id: 'e1',
-      period: '2023 — Present',
-      role: 'B.Sc. in Computer Science & Engineering',
-      org: 'University of Dhaka',
-      detail:
-        'Core CS coursework — algorithms, object-oriented programming and data communications — kept firmly hands-on with coding projects.',
-    },
-    {
       id: 'e2',
       period: '2021 — 2023',
       role: 'Vice President (IT)',
       org: 'Notre Dame Yoga & Meditation Club',
       detail:
         'Managed the club’s technology, designed and coordinated seminar decks, and built visual overlays for media announcements.',
+    },
+    {
+      id: 'e1',
+      period: '2023 — Present',
+      role: 'B.Sc. in Computer Science & Engineering',
+      org: 'University of Dhaka',
+      detail:
+        'Core CS coursework — algorithms, object-oriented programming and data communications — kept firmly hands-on with coding projects.',
     },
     {
       id: 'e3',
@@ -198,6 +220,8 @@ export const DEFAULT_CONTENT: Content = {
         'An interactive C++ group project for CSE-1202, with console graphics and full gameplay mechanics built from scratch.',
       stack: ['C++', 'Game Dev', 'OOP'],
       href: 'https://github.com/farhanlabibahan/DU_Conquer',
+      video: 'https://youtube.com/watch?v=G9tmDD0ykBE',
+      genre: 'Trailer',
       accent: 'cyan',
     },
     {
@@ -234,6 +258,7 @@ export const DEFAULT_CONTENT: Content = {
         'Video editing portfolio — colour grading and cinematic sound design across short-form and long-form work.',
       stack: ['DaVinci Resolve', 'Colour Grading', 'Sound Design'],
       href: 'https://sites.google.com/view/farhanlabibahan',
+      genre: 'Cinematic',
       accent: 'cyan',
     },
     {
@@ -243,7 +268,49 @@ export const DEFAULT_CONTENT: Content = {
         'Game project trailers, short films, tour vlogs and documentary cuts — pacing, motion and titling.',
       stack: ['CapCut', 'YouTube', 'Trailer Design'],
       href: 'https://sites.google.com/view/farhanlabibahan',
+      genre: 'Documentary & Trailer',
       accent: 'violet',
+    },
+    {
+      id: 'p7',
+      title: 'CloudCare',
+      blurb:
+        'A Spring Boot (Java 17) web app providing healthcare features for doctors, patients and admins — user management, file uploads, PDF generation and email notifications.',
+      stack: ['Java', 'Spring Boot', 'Web'],
+      href: 'https://github.com/Raihri/CLOUDCARE',
+      video: 'https://youtube.com/watch?v=c6hTNkT46Go',
+      accent: 'electric',
+    },
+  ],
+
+  videos: [
+    {
+      id: 'v1',
+      title: 'আমার চোখে জয়পুরহাট শহর',
+      note: 'City travel piece — shots, pacing and colour work.',
+      videoId: 'CbPTCbaXD4g',
+      accent: 'cyan',
+    },
+    {
+      id: 'v2',
+      title: 'The Office Glitch | A Short-Film',
+      note: 'Short film — edit, sound and titles.',
+      videoId: 'ohm8DIsZamQ',
+      accent: 'violet',
+    },
+    {
+      id: 'v3',
+      title: 'DU Conquer — Game Trailer',
+      note: 'Trailer cut for the DU_Conquer C++ game.',
+      videoId: 'WhmYbzATL9I',
+      accent: 'electric',
+    },
+    {
+      id: 'v4',
+      title: 'AutoReelEngine — Pitch',
+      note: 'Hackathon pitch film — motion graphics and pacing.',
+      videoId: 'UjmBw8kQPsE',
+      accent: 'purple',
     },
   ],
 
@@ -252,28 +319,28 @@ export const DEFAULT_CONTENT: Content = {
       id: 's1',
       name: 'Programming',
       level: 0.9,
-      items: ['C', 'C++', 'Java'],
+      items: ['C', 'C++', 'Java', 'Python'],
       accent: 'cyan',
     },
     {
       id: 's2',
       name: 'Backend & Tools',
       level: 0.74,
-      items: ['Spring Boot', 'Git', 'Workflows'],
+      items: ['Git', 'Docker'],
       accent: 'electric',
     },
     {
       id: 's3',
       name: 'Video & Motion',
       level: 0.92,
-      items: ['DaVinci Resolve', 'CapCut', 'Colour Grading'],
+      items: ['DaVinci Resolve', 'CapCut'],
       accent: 'violet',
     },
     {
       id: 's4',
       name: 'Web',
       level: 0.7,
-      items: ['WordPress', 'HTML/CSS', 'Next.js'],
+      items: ['React', 'Next.js', 'FastAPI', 'Spring Boot'],
       accent: 'purple',
     },
     {
@@ -295,10 +362,8 @@ export const DEFAULT_CONTENT: Content = {
 
   email: 'farhanlabibahan@gmail.com',
 
-  // Blank by default — the Call action stays hidden until you fill this in
-  // from the console's Profile tab. Publishing a personal number is a choice,
-  // not a default.
-  phone: '',
+  // From the CV — enables the Call action on the contact chapter.
+  phone: '+8801912584460',
 };
 
 /** Accent name -> hex, used by both DOM and WebGL layers. */
