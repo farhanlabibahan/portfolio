@@ -7,10 +7,10 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
 
   // Static export so the site can be served from GitHub Pages / any CDN.
-  // `basePath` matches this repo's Pages URL (https://farhanlabibahan.github.io/Portfolio).
+  // `basePath` matches this repo's Pages URL (https://farhanlabibahan.github.io/pf).
   output: 'export',
-  basePath: '/Portfolio',
-  assetPrefix: '/Portfolio/',
+  basePath: '/pf',
+  assetPrefix: '/pf/',
 };
 
 export default nextConfig;
