@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Lenis from 'lenis';
-import { scroll, SECTIONS, SECTION_VH, clamp } from '@/lib/scroll';
+import { scroll, setLenis, SECTIONS, SECTION_VH, clamp } from '@/lib/scroll';
 
 /**
  * Boots Lenis smooth scrolling and pumps the global scroll singleton.
@@ -27,6 +27,8 @@ export function useLenis() {
       // hijacking the wheel and scrolling the page underneath them.
       allowNestedScroll: true,
     });
+
+    setLenis(lenis);
 
     let last = 0;
     let prevProgress = 0;
@@ -85,6 +87,7 @@ export function useLenis() {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
       document.documentElement.classList.remove('lenis');
+      setLenis(null);
       lenis.destroy();
     };
   }, []);

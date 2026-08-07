@@ -796,22 +796,14 @@
 .nav-mark {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   text-decoration: none;
   color: var(--soft);
-  font-family: var(--font-mono);
-  font-size: clamp(0.8rem, 1vw, 0.9rem);
-  font-weight: 500;
-  letter-spacing: 0.26em;
+  font-family: var(--font-display);
+  font-size: clamp(0.9rem, 1.1vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
   will-change: transform;
-  text-shadow: 0 1px 10px var(--halo);
-}
-.nav-coord {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  color: var(--ink-3);
-  white-space: pre;
   text-shadow: 0 1px 10px var(--halo);
 }
 .nav-cta {
@@ -976,6 +968,15 @@
   width: clamp(90px, 16vw, 150px);
   height: clamp(90px, 16vw, 150px);
 }
+.loader-sig {
+  width: min(60vw, 420px);
+  height: auto;
+  overflow: visible;
+  /* Soft elliptical vignette so the edges shade out instead of reading as a
+     hard box (the scan's ink runs edge-to-edge). */
+  -webkit-mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 58%, transparent 98%);
+  mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 58%, transparent 98%);
+}
 .loader-meta {
   display: flex;
   flex-direction: column;
@@ -1003,14 +1004,6 @@
   transform-origin: left;
   transition: transform 0.18s linear;
 }
-.loader-line {
-  font-family: var(--font-mono);
-  font-size: clamp(0.72rem, 0.95vw, 0.8rem);
-  font-weight: 500;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
 .loader-corner {
   position: absolute;
   font-family: var(--font-mono);
@@ -1022,10 +1015,6 @@
 .loader-tl {
   top: 1.6rem;
   left: 1.6rem;
-}
-.loader-br {
-  bottom: 1.6rem;
-  right: 1.6rem;
 }
 
 /* ==========================================================================
@@ -1771,9 +1760,6 @@
        at this width so only the track needs clearing. */
     --rail-w: 3.5rem;
   }
-  .nav-coord {
-    display: none;
-  }
   .rail {
     right: 0.5rem;
   }
@@ -1892,6 +1878,148 @@
 }
 
 /* ==========================================================================
+   SMALL PHONES
+   --------------------------------------------------------------------------
+   Below 640px the viewport is narrow enough that the desktop-first rules
+   still leave the nav and the type scale straining. Tighten the chrome, the
+   gutters and the largest type; nothing else needs to change because the
+   breakpoints above already collapsed the tables, forms and grids.
+   ========================================================================== */
+@media (max-width: 640px) {
+  :root {
+    --rail-w: 2.5rem;
+  }
+
+  .nav {
+    padding: 1rem 1rem;
+    gap: 0.4rem;
+  }
+  .nav-mark {
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    gap: 0.35rem;
+  }
+  .nav-mark img {
+    height: 18px;
+    width: auto;
+  }
+  .nav-actions {
+    gap: 0.35rem;
+  }
+.nav-mark img {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+}
+.nav-cta {
+    padding: 0.52rem 0.9rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+
+  .chapter-inner {
+    padding-left: 1.1rem;
+    padding-bottom: 3.5rem;
+  }
+  .chapter-inner.left > *,
+  .chapter-inner.right > * {
+    max-width: 100%;
+  }
+
+  .chapter-tag {
+    letter-spacing: 0.2em;
+    gap: 0.55rem;
+  }
+  .ct-line {
+    width: 2rem;
+  }
+
+  .hero-name {
+    font-size: clamp(2.3rem, 13vw, 3.1rem);
+  }
+  .hero-role {
+    letter-spacing: 0.22em;
+  }
+  .hero-tag {
+    max-width: 100%;
+    font-size: clamp(1rem, 4.4vw, 1.15rem);
+  }
+
+  .h-md {
+    font-size: clamp(1.7rem, 8.5vw, 2.3rem);
+    margin-bottom: 0.9rem;
+  }
+  .h-lg {
+    font-size: clamp(1.55rem, 7.5vw, 2.1rem);
+    margin-bottom: 0.9rem;
+  }
+  .h-xl {
+    font-size: clamp(2rem, 10.5vw, 2.8rem);
+    margin-bottom: 1rem;
+  }
+
+  /* About: anchor to the top so the copy can never ride up under the nav,
+     and dial the type down so it fits in one viewport height. */
+  .chapter-inner.split {
+    justify-content: flex-start;
+    gap: clamp(1.1rem, 5vw, 2rem);
+  }
+  .split-col {
+    max-width: 100%;
+  }
+  .prose p,
+  .lede {
+    font-size: clamp(0.92rem, 3.6vw, 1.05rem);
+  }
+  .skill-row .skill-name {
+    font-size: 0.82rem;
+  }
+  .skill-items {
+    font-size: 0.66rem;
+  }
+
+  .rail {
+    right: 0.4rem;
+  }
+  .rail-svg {
+    width: 16px;
+  }
+
+  .stat-grid {
+    gap: 0.45rem;
+  }
+  .stat {
+    padding: 0.8rem 0.85rem;
+  }
+  .xp {
+    padding-left: 0.9rem;
+  }
+  .skill-row {
+    padding: 0.6rem 0.8rem;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'name'
+      'items'
+      'bar';
+    gap: 0.25rem;
+  }
+
+  .video-grid {
+    gap: 0.6rem;
+  }
+
+  .cf-send,
+  .cf-call {
+    padding: 0.65rem 1rem;
+    font-size: 0.68rem;
+  }
+  .contact-links {
+    gap: 0.35rem 1rem;
+  }
+}
+
+/* ==========================================================================
    DAYLIGHT SURFACE TREATMENT
    --------------------------------------------------------------------------
    On a bright background a dark drop-shadow reads as a smudge, so copy gets a
@@ -1905,8 +2033,7 @@
 .contact-loc,
 .rail-label,
 .rail-pct,
-.nav-mark,
-.nav-coord {
+.nav-mark {
   text-shadow: 0 1px 10px var(--halo);
 }
 

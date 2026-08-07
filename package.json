@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/copy-assets.mjs && node scripts/make-signature-svg.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-assets.mjs && node scripts/make-signature-svg.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

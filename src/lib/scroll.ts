@@ -1,3 +1,5 @@
+import type Lenis from 'lenis';
+
 /**
  * ============================================================================
  * SCROLL STATE SINGLETON
@@ -72,7 +74,7 @@ export const SECTION_LABELS: Record<SectionId, string> = {
   hero: 'Home',
   about: 'About',
   journey: 'Journey',
-  awards: 'Awards',
+  awards: 'Achievements',
   work: 'Work',
   editing: 'Editing',
   contact: 'Contact',
@@ -147,3 +149,30 @@ export const reelReveal = (offset: number, dead = 0.16, cutoff = 0.74) => {
   const a = Math.abs(offset);
   return 1 - smootherstep(clamp((a - dead) / (cutoff - dead)));
 };
+
+/* ---------------------------------------------------------------------------
+   LENIS BRIDGE
+   Lenis lives inside useLenis (a component) but nested scroll panes need to
+   hand the wheel back to it once they run out of room. Keep a module-level
+   handle here so a pane at its scroll boundary can feed Lenis exactly the
+   same delta it would receive from a wheel over the page itself.
+   ------------------------------------------------------------------------ */
+
+let lenis: Lenis | null = null;
+
+export function setLenis(instance: Lenis | null) {
+  lenis = instance;
+}
+
+/** Feed one wheel tick into Lenis as if it had been scrolled over the page. */
+export function lenisWheel(deltaY: number, deltaMode: number) {
+  if (!lenis) return;
+  const o = lenis.options as Lenis['options'] & { lerp: number; wheelMultiplier: number };
+  const multiplier = deltaMode === 1 ? 100 / 6 : deltaMode === 2 ? window.innerHeight : 1;
+  lenis.scrollTo(lenis.targetScroll + deltaY * multiplier * o.wheelMultiplier, {
+    programmatic: false,
+    lerp: o.lerp,
+    duration: o.duration,
+    easing: o.easing,
+  });
+}

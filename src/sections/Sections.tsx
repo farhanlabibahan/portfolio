@@ -14,6 +14,7 @@ import {
   scroll as scrollState,
   smootherstep,
   clamp as clampNum,
+  lenisWheel,
 } from '@/lib/scroll';
 import { setCursor } from '@/lib/ui';
 import { SectionActiveProvider } from '@/lib/sectionActive';
@@ -367,8 +368,34 @@ function ScrollFade({ children, className = '' }: { children: React.ReactNode; c
     const ro = new ResizeObserver(update);
     ro.observe(el);
     window.addEventListener('resize', update);
+
+    /* Wheel handoff, gated on the chapter crossfade. While the section is
+       still dissolving in/out (opacity not yet full) the table must not eat the
+       wheel — it forwards straight to the page so the transition keeps moving.
+       Once the section is fully visible the table scrolls natively, and only
+       when it hits a boundary (the cue has cleared) does the wheel chain to
+       Lenis. The page never moves a pixel before the table is genuinely at its
+       end. */
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+      const section = el.closest('section');
+      const target = section ? SECTIONS.indexOf(section.id as (typeof SECTIONS)[number]) : -1;
+      const fullyVisible = target >= 0 && Math.abs(scrollState.index - target) <= FADE_HOLD;
+
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      const atBottom = e.deltaY > 0 && el.scrollTop >= maxScroll - 4;
+      const atTop = e.deltaY < 0 && el.scrollTop <= 4;
+
+      if (fullyVisible && !atBottom && !atTop) return;
+      e.preventDefault();
+      e.stopPropagation();
+      lenisWheel(e.deltaY, e.deltaMode);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+
     return () => {
       el.removeEventListener('scroll', update);
+      el.removeEventListener('wheel', onWheel);
       ro.disconnect();
       window.removeEventListener('resize', update);
     };
@@ -516,7 +543,7 @@ export function Sections() {
           one at a time meant a reader never saw the shape of the record. */}
       <Shell id="awards" align="table">
         <ChapterTag index={3} />
-        <SplitText as="h2" text="Awards." className="display h-md" stagger={0.03} />
+        <SplitText as="h2" text="Achievements." className="display h-md" stagger={0.03} />
 
         <Reveal delay={0.12}>
           <ScrollFade className="table-wrap">

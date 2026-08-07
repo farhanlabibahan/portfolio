@@ -4,21 +4,19 @@ import './ui.css';
 import { SITE } from '@/lib/data';
 
 export const metadata: Metadata = {
-  title: `${SITE.name} — ${SITE.role}`,
+  title: 'Farhan Labib - Portfolio',
   description: SITE.tagline,
   openGraph: {
-    title: `${SITE.name} — ${SITE.role}`,
+    title: 'Farhan Labib - Portfolio',
     description: SITE.tagline,
     type: 'website',
   },
   icons: {
     icon: [
       {
-        url:
-          'data:image/svg+xml,' +
-          encodeURIComponent(
-            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22E1FF"/><stop offset="1" stop-color="#8B5CFF"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="#05070A"/><circle cx="16" cy="16" r="8" fill="none" stroke="url(#g)" stroke-width="2"/><circle cx="16" cy="16" r="2.5" fill="url(#g)"/></svg>`
-          ),
+        url: '/portfolio/signature-favicon.png',
+        sizes: '64x64',
+        type: 'image/png',
       },
     ],
   },
