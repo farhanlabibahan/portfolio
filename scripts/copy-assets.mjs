@@ -184,7 +184,7 @@ function renderFavicon(white, w, h, size = 64, radius = 14, pad = 11) {
 // Run
 // ---------------------------------------------------------------------------
 const COPIED = [
-  ["Ahan's CV.pdf", 'cv.pdf'],
+  ['Farhan Labib CV.pdf', 'cv.pdf'],
   ['signature.png', 'signature.png'],
   ['ahan.jpeg', 'ahan.jpeg'],
 ];
