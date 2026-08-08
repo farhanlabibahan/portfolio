@@ -9,7 +9,6 @@ import { uiStore, useUI } from '@/lib/ui';
 import { Cursor } from './Cursor';
 import { Loader } from './Loader';
 import { Nav } from './Nav';
-import { ScrollProgress } from './ScrollProgress';
 import { AdminPanel } from './AdminPanel';
 import { EasterEggs } from './EasterEggs';
 import { Sections, ProjectDetail } from '@/sections/Sections';
@@ -31,7 +30,6 @@ function Chrome() {
     <>
       <Nav />
       <Sections />
-      <ScrollProgress />
       <AnimatePresence>
         {focusedProject && (
           <ProjectDetail

@@ -450,26 +450,42 @@ export function Sections() {
     <div className="chapters">
       {/* ================= 01 — HERO (lab entrance) ================= */}
       <Shell id="hero" align="center" className="hero">
-        <ChapterTag index={0} />
-        <SplitText
-          as="h1"
-          text={content.name}
-          className="display hero-name text-gradient"
-          stagger={0.03}
-          delay={0.15}
-        />
-        <Reveal delay={0.5}>
-          <p className="hero-role">
-            <Typewriter words={content.roles} />
-          </p>
+        <div className="hero-copy">
+          <ChapterTag index={0} />
+          <Reveal delay={0.12}>
+            <p className="hero-greet">Hi, this is</p>
+          </Reveal>
+          <SplitText
+            as="h1"
+            text={content.name}
+            className="display hero-name text-gradient"
+            stagger={0.03}
+            delay={0.15}
+          />
+          <Reveal delay={0.5}>
+            <p className="hero-role">
+              <Typewriter words={content.roles} />
+            </p>
+          </Reveal>
+          <Reveal delay={0.65}>
+            <p className="hero-tag">{content.tagline}</p>
+          </Reveal>
+        </div>
+        <Reveal delay={0.2}>
+          <div className="hero-avatar">
+            <img
+              src="/portfolio/ahan.png"
+              alt={content.name}
+              width={240}
+              height={240}
+              draggable={false}
+            />
+          </div>
         </Reveal>
-        <Reveal delay={0.65}>
-          <p className="hero-tag">{content.tagline}</p>
-        </Reveal>
-        <Reveal delay={0.85} className="hero-scroll">
+        <div className="hero-scroll" aria-hidden>
           <span className="scroll-hint-line" />
           <span className="eyebrow">Scroll to enter the lab</span>
-        </Reveal>
+        </div>
       </Shell>
 
       {/* ================= 02 — ABOUT (bio + skills) ================= */}
