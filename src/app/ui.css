@@ -979,30 +979,38 @@
 
 /* ==========================================================================
    LOADER
+   --------------------------------------------------------------------------
+   A translucent black veil rather than an opaque card: the real page (WebGL
+   lab + hero) is already live underneath, just dimmed, so the transition out
+   is a simple fade instead of a reveal.
    ========================================================================== */
 .loader {
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: var(--void);
+  background: rgba(5, 7, 11, 0.66);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 2.2rem;
 }
-.loader-mark {
-  width: clamp(90px, 16vw, 150px);
-  height: clamp(90px, 16vw, 150px);
+.loader-spinner {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--cyan);
+  border-right-color: var(--violet);
+  animation: loaderSpin 0.9s linear infinite;
+  box-shadow: 0 0 24px rgba(34, 225, 255, 0.18);
 }
-.loader-sig {
-  width: min(60vw, 420px);
-  height: auto;
-  overflow: visible;
-  /* Soft elliptical vignette so the edges shade out instead of reading as a
-     hard box (the scan's ink runs edge-to-edge). */
-  -webkit-mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 58%, transparent 98%);
-  mask-image: radial-gradient(ellipse 72% 68% at 50% 50%, #000 58%, transparent 98%);
+@keyframes loaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 .loader-meta {
   display: flex;
@@ -1017,6 +1025,7 @@
   letter-spacing: 0.06em;
   color: var(--soft);
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 10px var(--halo);
 }
 .loader-bar {
   width: min(240px, 52vw);
@@ -1038,6 +1047,7 @@
   font-weight: 500;
   letter-spacing: 0.26em;
   color: var(--ink-3);
+  text-shadow: 0 1px 10px var(--halo);
 }
 .loader-tl {
   top: 1.6rem;

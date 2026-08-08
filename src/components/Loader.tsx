@@ -9,12 +9,14 @@ import { scroll } from '@/lib/scroll';
  * ============================================================================
  * LOADING SCENE
  * ============================================================================
- * A cinematic pre-roll rather than a spinner: the signature fades in and
- * back out while the counter eases to 100 with a decaying random walk so it
- * never feels fake-linear.
+ * A lightweight pre-roll rather than a signature card: a spinning ring and a
+ * percentage counter ease to 100 with a decaying random walk so it never
+ * feels fake-linear.
  *
- * On exit the whole panel wipes upward while a light bar sweeps across —
- * which is also when the camera's intro dolly starts (scroll.entered = true).
+ * The panel is a translucent black veil, so the real page — WebGL lab and
+ * hero — is already visible behind it. On exit it fades to fully
+ * transparent, which is also when the camera's intro dolly starts
+ * (scroll.entered = true).
  * ============================================================================
  */
 
@@ -63,23 +65,12 @@ export function Loader() {
         <motion.div
           className="loader"
           initial={{ opacity: 1 }}
-          exit={{ clipPath: 'inset(0 0 100% 0)', opacity: 1 }}
-          transition={{ duration: 1.15, ease: [0.76, 0, 0.24, 1] }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
         >
-          {/* The signature, simply faded in and back out */}
-          <motion.img
-            className="loader-sig"
-            src="/portfolio/signature-white.png"
-            alt="Farhan Labib signature"
-            draggable={false}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: [0, 1, 1, 0], y: [12, 0, 0, -8] }}
-            transition={{
-              duration: 2.6,
-              times: [0, 0.3, 0.82, 1],
-              ease: 'easeInOut',
-            }}
-          />
+          <div className="loader-spinner" aria-hidden>
+            <i />
+          </div>
 
           <div className="loader-meta">
             <div className="loader-count">{String(pct).padStart(3, '0')}</div>

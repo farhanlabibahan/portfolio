@@ -71,7 +71,7 @@ export function Nav() {
       >
         <img
           className="nav-avatar"
-          src="/portfolio/ahan.png"
+          src="/portfolio/ahan.jpeg"
           alt={content.name}
           width="40"
           height="40"

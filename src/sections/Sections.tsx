@@ -474,7 +474,7 @@ export function Sections() {
         <Reveal delay={0.2}>
           <div className="hero-avatar">
             <img
-              src="/portfolio/ahan.png"
+              src="/portfolio/ahan.jpeg"
               alt={content.name}
               width={240}
               height={240}
