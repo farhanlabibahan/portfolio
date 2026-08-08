@@ -27,7 +27,7 @@ export function Loader() {
 
   useEffect(() => {
     const start = performance.now();
-    const DURATION = 2600;
+    const DURATION = 1500;
 
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / DURATION);
@@ -46,7 +46,7 @@ export function Loader() {
         window.setTimeout(() => {
           uiStore.set({ loading: false });
           scroll.entered = true;
-        }, 520);
+        }, 280);
       }
     };
     raf.current = requestAnimationFrame(tick);
