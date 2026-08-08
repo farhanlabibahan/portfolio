@@ -6,7 +6,6 @@ import { useLenis } from '@/hooks/useLenis';
 import { usePointer } from '@/hooks/usePointer';
 import { ContentProvider } from '@/lib/store';
 import { uiStore, useUI } from '@/lib/ui';
-import { Cursor } from './Cursor';
 import { Loader } from './Loader';
 import { Nav } from './Nav';
 import { AdminPanel } from './AdminPanel';
@@ -54,7 +53,6 @@ export function App() {
       <Chrome />
       <AdminPanel />
       <EasterEggs />
-      <Cursor />
 
       {/* Cinematic finishing layers — always on top of everything else. */}
       <div className="cine-vignette" aria-hidden />

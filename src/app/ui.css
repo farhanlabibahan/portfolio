@@ -2122,10 +2122,6 @@
 .admin-backdrop {
   background: rgba(226, 231, 240, 0.72);
 }
-.cursor-dot {
-  background: var(--ink);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--cyan) 80%, transparent);
-}
 
 /* ==========================================================================
    DATA TABLES — awards + work
