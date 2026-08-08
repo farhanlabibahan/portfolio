@@ -13,8 +13,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE = os.path.join(ROOT, "public", "cv.pdf")
-PHOTO = os.path.join(ROOT, "c", "ahan.jpeg")
+BASE = os.path.join(ROOT, "public", "Farhan Labib CV.pdf")
+PHOTO = os.path.join(ROOT, "public", "ahan.jpeg")
 
 LINKS_OLD = (
     "q\n"

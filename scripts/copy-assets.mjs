@@ -1,17 +1,15 @@
 #!/usr/bin/env node
 /**
- * Syncs static assets from the source folder (`c/`) into `public/` so the
- * static export serves them at their public URLs. Run automatically before
- * `dev` and `build` — replace a file in `c/` and rebuild to update the site.
+ * Derives signature images from the raw `public/signature.png` scan. Run
+ * automatically before `dev` and `build`.
  *
- * Besides copying the raw assets, the signature is re-rendered into two
- * derived images:
+ * Two derived images are produced:
  *   - `signature-white.png`  — the ink flattened to solid white (the raw scan
  *     is dark ink on transparent, which vanishes on the near-black chrome).
  *   - `signature-favicon.png`— 64×64 white signature on a dark rounded tile
  *     for the browser tab (white alone is invisible on light tab strips).
  */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { deflateSync, crc32, inflateSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -183,30 +181,10 @@ function renderFavicon(white, w, h, size = 64, radius = 14, pad = 11) {
 // ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
-const COPIED = [
-  ['Farhan Labib CV.pdf', 'cv.pdf'],
-  ['signature.png', 'signature.png'],
-  ['ahan.jpeg', 'ahan.jpeg'],
-];
-
 let failed = false;
-const c = (n) => join(root, 'c', n);
 const pub = (n) => join(root, 'public', n);
 
-for (const [srcName, outName] of COPIED) {
-  const src = c(srcName);
-  const out = pub(outName);
-  if (!existsSync(src)) {
-    console.error(`Missing source asset: ${src}`);
-    failed = true;
-    continue;
-  }
-  mkdirSync(dirname(out), { recursive: true });
-  copyFileSync(src, out);
-  console.log(`Synced ${srcName} → ${out}`);
-}
-
-const sigSrc = c('signature.png');
+const sigSrc = pub('signature.png');
 if (existsSync(sigSrc)) {
   const { width, height, pixels } = decodePNG(readFileSync(sigSrc));
   const white = renderWhite(pixels, width, height);

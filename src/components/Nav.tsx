@@ -102,7 +102,7 @@ export function Nav() {
       <div className="nav-actions">
         <Link
           className="nav-cta"
-          href="/cv.pdf"
+          href="/Farhan%20Labib%20CV.pdf"
           target="_blank"
           rel="noreferrer noopener"
           onMouseEnter={() => setCursor('hover')}
