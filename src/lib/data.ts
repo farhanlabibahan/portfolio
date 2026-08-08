@@ -243,6 +243,24 @@ export const DEFAULT_CONTENT: Content = {
       video: 'https://youtube.com/watch?v=c6hTNkT46Go',
       accent: 'electric',
     },
+    {
+      id: 'p3',
+      title: 'SUST Onsite — ORLG',
+      blurb:
+        'Real-time operational risk flagging + dual liquidity forecasting for multi-provider mobile-money agents — built for the SUST CSE Carnival 2026 Multi-Provider Agent Liquidity & Anomaly Coordination Challenge. Tracks each provider balance separately, flags unusual activity with a full explanation (never "fraud"), routes every case to one accountable owner, and never moves money on its own.',
+      stack: ['Fintech', 'Risk Modeling', 'Forecasting'],
+      href: 'https://github.com/Raihri/sust_onsite',
+      accent: 'purple',
+    },
+    {
+      id: 'p4',
+      title: 'AgriSense AI',
+      blurb:
+        'A source-grounded Bangladesh farm-planning agent from the IUT 12th ICT Fest Bdapps Agentic AI Hackathon (final round) — conversational intake turns into a dated, itemized, explained season plan driven by live weather and FAO-56 crop math.',
+      stack: ['FastAPI', 'Next.js', 'Python', 'LLM / RAG'],
+      href: 'https://github.com/Raihri/Delulu-Developers_AgriSense/tree/Ahan',
+      accent: 'violet',
+    },
   ],
 
   videos: [
