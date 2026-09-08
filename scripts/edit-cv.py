@@ -1,5 +1,6 @@
 import argparse
 import os
+import tempfile
 
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import (
@@ -55,6 +56,21 @@ LINKS_NEW = (
 )
 
 
+def remove_project_from_stream(raw, title_frag, link_frag):
+    ti = raw.find(title_frag)
+    if ti == -1:
+        print(f"project not found (already removed?), skipping: {title_frag[:40]!r}")
+        return raw
+    block_start = raw.rfind(b"\r\nq\r\n1 0 0 1 ", 0, ti)
+    li = raw.find(link_frag, ti)
+    link_tail = raw.find(b"Q\r\nQ", li)
+    end = link_tail + len(b"Q\r\nQ")
+    if block_start == -1 or li == -1 or link_tail == -1:
+        print(f"could not locate project block boundaries: {title_frag[:40]!r}")
+        return raw
+    return raw[:block_start] + raw[end:]
+
+
 def fix_link_annotations(page):
     annots = page.get("/Annots")
     if not annots:
@@ -97,7 +113,9 @@ def main():
     parser.add_argument("--base", default=BASE)
     parser.add_argument("--photo", default=PHOTO)
     parser.add_argument("-o", "--output", default=BASE)
-    parser.add_argument("--tmp-overlay", default="/tmp/cv_overlay.pdf")
+    parser.add_argument("--tmp-overlay", default=os.path.join(
+        tempfile.gettempdir(), "cv_overlay.pdf"
+    ))
     args = parser.parse_args()
 
     reader = PdfReader(args.base)
@@ -106,8 +124,20 @@ def main():
     raw1 = p1["/Contents"].get_object().get_data()
     raw1 = raw1.replace(b"(Farhan Labib Ahan) Tj", b"(Farhan Labib ) Tj")
     assert b"(Farhan Labib Ahan)" not in raw1
-    assert LINKS_OLD.encode() in raw1, "links line not found"
-    raw1 = raw1.replace(LINKS_OLD.encode(), LINKS_NEW.encode())
+    if LINKS_OLD.encode() in raw1:
+        raw1 = raw1.replace(LINKS_OLD.encode(), LINKS_NEW.encode())
+    else:
+        print("links already in new format, skipping")
+    raw1 = remove_project_from_stream(
+        raw1,
+        b"(SUST Onsite ",
+        b"github.com/Raihri/sust_onsite) Tj",
+    )
+    raw1 = remove_project_from_stream(
+        raw1,
+        b"(AgriSense AI )",
+        b"AgriSense/tree/Ahan) Tj",
+    )
     s1 = DecodedStreamObject()
     s1.set_data(raw1)
     p1[NameObject("/Contents")] = s1
@@ -118,8 +148,10 @@ def main():
     for phrase in ["8th Place", "11th Place", "12th Place", "Finalist"]:
         old = f"\\227 {phrase}) Tj".encode()
         new = f"\\227 ) Tj /F2 9.5 Tf ({phrase}) Tj /F1 9.5 Tf".encode()
-        assert old in raw2, phrase
-        raw2 = raw2.replace(old, new)
+        if old in raw2:
+            raw2 = raw2.replace(old, new)
+        else:
+            print(f"badge already formatted, skipping: {phrase}")
     s2 = DecodedStreamObject()
     s2.set_data(raw2)
     p2[NameObject("/Contents")] = s2
