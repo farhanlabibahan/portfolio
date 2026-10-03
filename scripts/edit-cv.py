@@ -143,18 +143,105 @@ def main():
     p1[NameObject("/Contents")] = s1
     fix_link_annotations(p1)
 
-    p2 = reader.pages[1]
-    raw2 = p2["/Contents"].get_object().get_data()
-    for phrase in ["8th Place", "11th Place", "12th Place", "Finalist"]:
-        old = f"\\227 {phrase}) Tj".encode()
-        new = f"\\227 ) Tj /F2 9.5 Tf ({phrase}) Tj /F1 9.5 Tf".encode()
-        if old in raw2:
-            raw2 = raw2.replace(old, new)
+    already_tidied = b"Notre Dame Yoga" not in raw1 and b"Res Judicata" in raw1
+    if len(reader.pages) > 1:
+        p2 = reader.pages[1]
+        raw2 = p2["/Contents"].get_object().get_data()
+        for phrase in ["8th Place", "11th Place", "12th Place", "Finalist"]:
+            old = f"\\227 {phrase}) Tj".encode()
+            new = f"\\227 ) Tj /F2 9.5 Tf ({phrase}) Tj /F1 9.5 Tf".encode()
+            if old in raw2:
+                raw2 = raw2.replace(old, new)
+            else:
+                print(f"badge already formatted, skipping: {phrase}")
+        if b"Res Judicata" not in raw2:
+            anchor = raw2.find(b"(Finalist) Tj /F1 9.5 Tf T* ET\nQ\nQ\n")
+            if anchor == -1:
+                print("could not locate achievements tail, skipping legal tech entry")
+            else:
+                insert_at = anchor + len(b"(Finalist) Tj /F1 9.5 Tf T* ET\nQ\nQ\n")
+                block = (
+                    b"q\n1 0 0 1 57.02362 681.5354 cm\n"
+                    b"q\n.121569 .141176 .188235 rg\n"
+                    b"BT 1 0 0 1 0 4.5 Tm /F1 9.5 Tf 14 TL "
+                    b"(National ADLASB Legal Tech Hackathon 2026 (Res Judicata Digitalis) \\227 ) Tj "
+                    b"/F2 9.5 Tf (Grand Champion) Tj /F1 9.5 Tf T* ET\nQ\nQ\n"
+                )
+                raw2 = raw2[:insert_at] + block + raw2[insert_at:]
         else:
-            print(f"badge already formatted, skipping: {phrase}")
-    s2 = DecodedStreamObject()
-    s2.set_data(raw2)
-    p2[NameObject("/Contents")] = s2
+            print("legal tech hackathon entry already present, skipping")
+        s2 = DecodedStreamObject()
+        s2.set_data(raw2)
+        p2[NameObject("/Contents")] = s2
+
+    # --- Page 0 tidy: drop the yoga club experience + Video & Motion skill,
+    # close the gap that leaves, then pull Achievements up onto page 0 so it
+    # follows the projects instead of stranding them on their own page. ---
+    if not already_tidied:
+        for y in ("578.5354", "571.5354", "549.5354", "519.5354", "409.5354"):
+            marker = f"q\n1 0 0 1 57.02362 {y} cm\n".encode()
+            s = raw1.find(marker)
+            if s != -1:
+                e = raw1.find(b"\nQ\nQ\n", s)
+                if e != -1:
+                    raw1 = raw1[:s] + raw1[e + len(b"\nQ\nQ\n"):]
+                else:
+                    print(f"block end not found for y={y}")
+            else:
+                print(f"block already removed, skipping y={y}")
+
+        for old_y, new_y in [
+            ("486.5354", "578.5354"),
+            ("479.5354", "571.5354"),
+            ("460.5354", "552.5354"),
+            ("443.5354", "535.5354"),
+            ("426.5354", "518.5354"),
+            ("376.5354", "485.5354"),
+            ("369.5354", "478.5354"),
+            ("347.5354", "456.5354"),
+            ("317.5354", "426.5354"),
+            ("302.5354", "411.5354"),
+            ("280.5354", "389.5354"),
+            ("250.5354", "359.5354"),
+            ("235.5354", "344.5354"),
+        ]:
+            old = f"1 0 0 1 57.02362 {old_y} cm".encode()
+            if old in raw1:
+                raw1 = raw1.replace(old, f"1 0 0 1 57.02362 {new_y} cm".encode(), 1)
+
+        s1b = DecodedStreamObject()
+        s1b.set_data(raw1)
+        p1[NameObject("/Contents")] = s1b
+
+        # Cut the whole Achievements section off page 2 and re-place it on page 1.
+        if len(reader.pages) > 1:
+            start = raw2.find(b"q\n1 0 0 1 57.02362 775.5354 cm\n")
+            end = raw2.find(b"\nQ\nQ\n", raw2.find(b"(Grand Champion)"))
+        else:
+            start, end = -1, -1
+        if start != -1 and end != -1:
+            end += len(b"\nQ\nQ\n")
+            block = raw2[start:end]
+            raw2 = raw2[:start] + raw2[end:]
+            for old_y, new_y in [
+                ("775.5354", "304.5354"),
+                ("768.5354", "297.5354"),
+                ("749.5354", "278.5354"),
+                ("732.5354", "261.5354"),
+                ("715.5354", "244.5354"),
+                ("698.5354", "227.5354"),
+                ("681.5354", "210.5354"),
+            ]:
+                block = block.replace(
+                    f"1 0 0 1 57.02362 {old_y} cm".encode(),
+                    f"1 0 0 1 57.02362 {new_y} cm".encode(),
+                )
+            raw1 += block + b"\n"
+            s1c = DecodedStreamObject()
+            s1c.set_data(raw1)
+            p1[NameObject("/Contents")] = s1c
+        else:
+            print("achievements block not found, leaving page 2 layout alone")
 
     cx, cy, r = 510, 752, 45
     c = canvas.Canvas(args.tmp_overlay, pagesize=A4)
@@ -177,7 +264,11 @@ def main():
     p1.merge_page(PdfReader(args.tmp_overlay).pages[0])
 
     writer = PdfWriter()
-    for p in reader.pages:
+    merged_page_one = raw1 is not None and b"(Grand Champion)" in raw1
+    for i, p in enumerate(reader.pages):
+        # When Achievements moved up onto page 1, page 2 is empty — drop it.
+        if merged_page_one and i == 1:
+            continue
         writer.add_page(p)
     with open(args.output, "wb") as f:
         writer.write(f)

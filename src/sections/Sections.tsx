@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { SplitText, Reveal } from '@/components/SplitText';
 import { MagneticButton } from '@/components/MagneticButton';
 import { useContent } from '@/lib/store';
-import { visible, videoUrl, videoThumb } from '@/lib/data';
+import { visible } from '@/lib/data';
 import {
   SECTIONS,
   SECTION_LABELS,
@@ -440,7 +440,6 @@ export function Sections() {
   const experience = useMemo(() => visible(content.experience), [content.experience]);
   const achievements = useMemo(() => visible(content.achievements), [content.achievements]);
   const projects = useMemo(() => visible(content.projects), [content.projects]);
-  const videos = useMemo(() => visible(content.videos), [content.videos]);
   const links = useMemo(
     () => visible(content.links).filter((l) => !l.href.startsWith('mailto:')),
     [content.links]
@@ -561,6 +560,27 @@ export function Sections() {
         <ChapterTag index={3} />
         <SplitText as="h2" text="Achievements." className="display h-md" stagger={0.03} />
 
+        <Reveal delay={0.1}>
+          <figure className="champion glass">
+            <img
+              src="/portfolio/rjd.jpeg"
+              alt="Res Judicata Digitalis — National ADLASB Legal Tech Hackathon 2026"
+              loading="lazy"
+            />
+            <figcaption>
+              <span className="eyebrow">Grand Champion · National ADLASB Legal Tech Hackathon 2026</span>
+              <p>
+                Team <strong>Res Judicata Digitalis</strong> — five students from the University of
+                Dhaka — took the ৳30,000 Grand Champion prize on Sept 26–27 at Krishibid Institution
+                Bangladesh, out of 250+ teams nationally, and the only DU team in the 10-team final
+                round. Built a single Digital Legal Aid System prototype covering five citizen
+                personas, seven provider roles and eleven technical challenges without fragmenting
+                the case record.
+              </p>
+            </figcaption>
+          </figure>
+        </Reveal>
+
         <Reveal delay={0.12}>
           <ScrollFade className="table-wrap">
             <table className="data-table">
@@ -674,53 +694,9 @@ export function Sections() {
         </Reveal>
       </Shell>
 
-      {/* ================= 06 — VIDEO EDITING ================= */}
-      <Shell id="editing" align="table">
-        <ChapterTag index={5} />
-        <SplitText as="h2" text="Video Editing." className="display h-md" stagger={0.03} />
-
-        <Reveal delay={0.12}>
-          <ScrollFade className="video-grid">
-            {videos.map((v, i) => (
-              <Reveal key={v.id} delay={0.14 + i * 0.07} className="video-cell">
-                <a
-                  className="video-card"
-                  href={videoUrl(v.videoId)}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  data-accent={v.accent}
-                  onMouseEnter={() => setCursor('hover')}
-                  onMouseLeave={() => setCursor('default')}
-                >
-                  <span className="video-thumb">
-                    <img
-                      src={videoThumb(v.videoId)}
-                      alt={v.title}
-                      loading="lazy"
-                      width={480}
-                      height={360}
-                    />
-                    <span className="video-play" aria-hidden>
-                      <span>▶</span>
-                    </span>
-                  </span>
-                  <span className="video-body">
-                    <span className="video-title">{v.title}</span>
-                    <span className="video-note">{v.note}</span>
-                    <span className="video-cta">
-                      Watch on YouTube <span aria-hidden>↗</span>
-                    </span>
-                  </span>
-                </a>
-              </Reveal>
-            ))}
-          </ScrollFade>
-        </Reveal>
-      </Shell>
-
-      {/* ================= 07 — CONTACT ================= */}
+      {/* ================= 06 — CONTACT ================= */}
       <Shell id="contact" align="center" className="contact" last>
-        <ChapterTag index={6} />
+        <ChapterTag index={5} />
         <SplitText
           as="h2"
           text="Let's build something."

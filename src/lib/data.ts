@@ -55,23 +55,6 @@ export type Project = Hideable & {
   accent: 'cyan' | 'violet' | 'electric' | 'purple';
 };
 
-export type Video = Hideable & {
-  id: string;
-  /** Video title as it appears on YouTube. */
-  title: string;
-  /** One-liner describing the edit / the piece. */
-  note: string;
-  /** YouTube video ID — href and thumbnail are derived from it. */
-  videoId: string;
-  accent: 'cyan' | 'violet' | 'electric' | 'purple';
-};
-
-/** YouTube watch URL for a video ID. */
-export const videoUrl = (videoId: string) => `https://youtube.com/watch?v=${videoId}`;
-
-/** High-quality thumbnail for a video ID. */
-export const videoThumb = (videoId: string) => `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-
 export type SkillGroup = Hideable & {
   id: string;
   name: string;
@@ -105,7 +88,6 @@ export type Content = {
   achievements: Achievement[];
   experience: Experience[];
   projects: Project[];
-  videos: Video[];
   skills: SkillGroup[];
   links: Link[];
   email: string;
@@ -139,14 +121,21 @@ export const DEFAULT_CONTENT: Content = {
   ],
 
   stats: [
-    { id: 'st1', value: '2nd Yr', label: 'CSE Undergrad' },
-    { id: 'st2', value: '7', label: 'GitHub Repos' },
-    { id: 'st3', value: '4', label: 'National Competitions' },
-    { id: 'st4', value: '23', label: 'Followers' },
+    { id: 'st1', value: '3rd Yr', label: 'CSE Undergrad' },
+    { id: 'st3', value: '5', label: 'National Competitions' },
   ],
 
   // --- Sourced from achivements.txt.rtf -------------------------------------
   achievements: [
+    {
+      id: 'a0',
+      event: 'National ADLASB Legal Tech Hackathon 2026',
+      category: 'Legal Tech Hackathon',
+      team: 'Res Judicata Digitalis',
+      placement: 'Grand Champion',
+      year: '2026',
+      note: '৳30,000 prize — 250+ teams nationwide, 10 finalists, only DU team in the final round.',
+    },
     {
       id: 'a1',
       event: 'DUET CSE Carnival 2026',
@@ -186,14 +175,6 @@ export const DEFAULT_CONTENT: Content = {
   ],
 
   experience: [
-    {
-      id: 'e2',
-      period: '2021 — 2023',
-      role: 'Vice President (IT)',
-      org: 'Notre Dame Yoga & Meditation Club',
-      detail:
-        'Managed the club’s technology, designed and coordinated seminar decks, and built visual overlays for media announcements.',
-    },
     {
       id: 'e1',
       period: '2023 — Present',
@@ -243,55 +224,6 @@ export const DEFAULT_CONTENT: Content = {
       video: 'https://youtube.com/watch?v=c6hTNkT46Go',
       accent: 'electric',
     },
-    {
-      id: 'p3',
-      title: 'SUST Onsite — ORLG',
-      blurb:
-        'Real-time operational risk flagging + dual liquidity forecasting for multi-provider mobile-money agents — built for the SUST CSE Carnival 2026 Multi-Provider Agent Liquidity & Anomaly Coordination Challenge. Tracks each provider balance separately, flags unusual activity with a full explanation (never "fraud"), routes every case to one accountable owner, and never moves money on its own.',
-      stack: ['Fintech', 'Risk Modeling', 'Forecasting'],
-      href: 'https://github.com/Raihri/sust_onsite',
-      accent: 'purple',
-    },
-    {
-      id: 'p4',
-      title: 'AgriSense AI',
-      blurb:
-        'A source-grounded Bangladesh farm-planning agent from the IUT 12th ICT Fest Bdapps Agentic AI Hackathon (final round) — conversational intake turns into a dated, itemized, explained season plan driven by live weather and FAO-56 crop math.',
-      stack: ['FastAPI', 'Next.js', 'Python', 'LLM / RAG'],
-      href: 'https://github.com/Raihri/Delulu-Developers_AgriSense/tree/Ahan',
-      accent: 'violet',
-    },
-  ],
-
-  videos: [
-    {
-      id: 'v1',
-      title: 'আমার চোখে জয়পুরহাট শহর',
-      note: 'City travel piece — shots, pacing and colour work.',
-      videoId: 'CbPTCbaXD4g',
-      accent: 'cyan',
-    },
-    {
-      id: 'v2',
-      title: 'The Office Glitch | A Short-Film',
-      note: 'Short film — edit, sound and titles.',
-      videoId: 'ohm8DIsZamQ',
-      accent: 'violet',
-    },
-    {
-      id: 'v3',
-      title: 'DU Conquer — Game Trailer',
-      note: 'Trailer cut for the DU_Conquer C++ game.',
-      videoId: 'WhmYbzATL9I',
-      accent: 'electric',
-    },
-    {
-      id: 'v4',
-      title: 'AutoReelEngine — Pitch',
-      note: 'Hackathon pitch film — motion graphics and pacing.',
-      videoId: 'UjmBw8kQPsE',
-      accent: 'purple',
-    },
   ],
 
   skills: [
@@ -310,25 +242,11 @@ export const DEFAULT_CONTENT: Content = {
       accent: 'electric',
     },
     {
-      id: 's3',
-      name: 'Video & Motion',
-      level: 0.92,
-      items: ['DaVinci Resolve', 'CapCut'],
-      accent: 'violet',
-    },
-    {
       id: 's4',
       name: 'Web',
       level: 0.7,
       items: ['React', 'Next.js', 'FastAPI', 'Spring Boot'],
       accent: 'purple',
-    },
-    {
-      id: 's5',
-      name: 'Design',
-      level: 0.66,
-      items: ['UI / UX', 'Figma'],
-      accent: 'cyan',
     },
   ],
 
