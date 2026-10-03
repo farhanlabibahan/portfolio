@@ -74,6 +74,18 @@ export type Experience = Hideable & {
 
 export type Stat = Hideable & { id: string; value: string; label: string };
 
+/** A photo from a competition, shown in the achievements carousel. */
+export type Highlight = Hideable & {
+  id: string;
+  /** Path under /public, e.g. "/portfolio/rjd.jpeg". */
+  src: string;
+  alt: string;
+  /** Short headline, e.g. "Grand Champion — Legal Tech Hackathon 2026". */
+  title: string;
+  /** One-liner shown under the headline. */
+  note: string;
+};
+
 export type Link = Hideable & { id: string; label: string; href: string };
 
 export type Content = {
@@ -86,6 +98,7 @@ export type Content = {
   about: string[];
   stats: Stat[];
   achievements: Achievement[];
+  highlights: Highlight[];
   experience: Experience[];
   projects: Project[];
   skills: SkillGroup[];
@@ -171,6 +184,16 @@ export const DEFAULT_CONTENT: Content = {
       placement: 'Finalist',
       year: '2026',
       note: 'Autonomous multi-agent system built end to end.',
+    },
+  ],
+
+  highlights: [
+    {
+      id: 'h1',
+      src: '/portfolio/rjd.jpeg',
+      alt: 'Res Judicata Digitalis — National ADLASB Legal Tech Hackathon 2026',
+      title: 'Grand Champion · National ADLASB Legal Tech Hackathon 2026',
+      note: 'Res Judicata Digitalis — ৳30,000 prize, 250+ teams nationwide, only DU team in the 10-team final round.',
     },
   ],
 

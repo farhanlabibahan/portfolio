@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { SplitText, Reveal } from '@/components/SplitText';
 import { MagneticButton } from '@/components/MagneticButton';
 import { useContent } from '@/lib/store';
-import { visible } from '@/lib/data';
+import { visible, type Highlight } from '@/lib/data';
 import {
   SECTIONS,
   SECTION_LABELS,
@@ -413,6 +413,59 @@ function ScrollFade({ children, className = '' }: { children: React.ReactNode; c
   );
 }
 
+/** Highlights carousel — competition photos in the Achievements chapter.
+    Add an entry to `highlights` in lib/data.ts and it shows up here. */
+function HighlightCarousel({ items }: { items: Highlight[] }) {
+  const [i, setI] = useState(0);
+  if (!items.length) return null;
+  const current = items[i % items.length];
+
+  return (
+    <figure className="champion glass">
+      <div className="champion-media">
+        <img src={current.src} alt={current.alt} loading="lazy" key={current.id} />
+        {items.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="champion-arrow prev"
+              aria-label="Previous photo"
+              onClick={() => setI((n) => (n - 1 + items.length) % items.length)}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="champion-arrow next"
+              aria-label="Next photo"
+              onClick={() => setI((n) => (n + 1) % items.length)}
+            >
+              ›
+            </button>
+          </>
+        )}
+      </div>
+      <figcaption>
+        <span className="eyebrow">{current.title}</span>
+        <p>{current.note}</p>
+        {items.length > 1 && (
+          <div className="champion-dots">
+            {items.map((h, n) => (
+              <button
+                key={h.id}
+                type="button"
+                aria-label={`Photo ${n + 1}`}
+                className={n === i % items.length ? 'on' : ''}
+                onClick={() => setI(n)}
+              />
+            ))}
+          </div>
+        )}
+      </figcaption>
+    </figure>
+  );
+}
+
 function ChapterTag({ index }: { index: number }) {
   const id = SECTIONS[index];
   const navIndex = NAV_SECTIONS.indexOf(id);
@@ -561,24 +614,7 @@ export function Sections() {
         <SplitText as="h2" text="Achievements." className="display h-md" stagger={0.03} />
 
         <Reveal delay={0.1}>
-          <figure className="champion glass">
-            <img
-              src="/portfolio/rjd.jpeg"
-              alt="Res Judicata Digitalis — National ADLASB Legal Tech Hackathon 2026"
-              loading="lazy"
-            />
-            <figcaption>
-              <span className="eyebrow">Grand Champion · National ADLASB Legal Tech Hackathon 2026</span>
-              <p>
-                Team <strong>Res Judicata Digitalis</strong> — five students from the University of
-                Dhaka — took the ৳30,000 Grand Champion prize on Sept 26–27 at Krishibid Institution
-                Bangladesh, out of 250+ teams nationally, and the only DU team in the 10-team final
-                round. Built a single Digital Legal Aid System prototype covering five citizen
-                personas, seven provider roles and eleven technical challenges without fragmenting
-                the case record.
-              </p>
-            </figcaption>
-          </figure>
+          <HighlightCarousel items={visible(content.highlights)} />
         </Reveal>
 
         <Reveal delay={0.12}>
